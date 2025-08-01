@@ -1,0 +1,68 @@
+/* --- Reset y base de la app --- */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #dbeafe;
+  min-height: 100vh;
+}
+
+/* --- Estilos para enlaces --- */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --- Variables y fuentes globales --- */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Líneas horizontales y bordes negros para tablas y listas --- */
+hr, .hr, .border-bottom, .border-top {
+  border-color: #000 !important;
+}
+
+/* Bordes de tablas Bootstrap negros */
+.table, .table th, .table td {
+  border-color: #000 !important;
+}
+
+/* Bordes de listas Bootstrap negros */
+.list-group-item {
+  border-color: #000 !important;
+}
+
+/* --- Utilidades y helpers globales --- */
+.text-center { text-align: center; }
+.mt-5 { margin-top: 3rem !important; }
+
+/* --- Helpers responsivos para layouts --- */
+@media (max-width: 900px) {
+  .responsive-layout {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* --- Iconos de features (usados globalmente) --- */
+.features-icon {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+

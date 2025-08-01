@@ -1,0 +1,63 @@
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+/* Navbar principal */
+.main-navbar {
+  background: #1a237e;
+  color: #fff;
+  padding: 16px 32px;
+  font-size: 1.2rem;
+}
+
+/* Sidebar */
+.sidebar {
+  background: linear-gradient(180deg, #1a237e 0%, #1976d2 100%);
+  color: #fff;
+  min-height: 100vh;
+  width: 220px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+/* Cards y layouts */
+.dashboard-card, .profile-card, .transaction-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  background: #fff;
+  padding: 32px 24px;
+  margin-bottom: 24px;
+}
+
+/* Helpers */
+.w-100 { width: 100% !important; }
+.me-2 { margin-right: 0.5rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+
+/* Responsive helpers */
+@media (max-width: 900px) {
+  .responsive-layout {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+

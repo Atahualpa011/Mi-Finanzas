@@ -1,0 +1,74 @@
+const pool = require('../db'); // Importa la conexión a la base de datos
+
+// --- Trae todas las transacciones del usuario autenticado ---
+async function getAllByUser(userId) {
+  // Consulta SQL: obtiene todas las transacciones del usuario, con su categoría
+  const [rows] = await pool.execute(
+    `SELECT
+       t.id,
+       t.type,
+       CONCAT(t.date, ' ', t.time) AS date,
+       t.amount,
+       c.name    AS category,
+       t.description
+     FROM transactions t
+     LEFT JOIN categories c ON t.category_id = c.id
+     WHERE t.user_id = ?
+     ORDER BY t.date DESC, t.time DESC`,
+    [userId]
+  );
+  return rows; // Devuelve el array de transacciones al controlador
+}
+
+// --- Crea una nueva transacción (gasto o ingreso) ---
+async function createTransaction({ userId, type, amount, date, time, categoryId, description }) {
+  // Inserta la transacción principal en la tabla
+  const [result] = await pool.execute(
+    `INSERT INTO transactions
+       (user_id, type, date, time, amount, category_id, description)
+     VALUES (?,?,?,?,?,?,?)`,
+    [
+      userId,
+      type,
+      date,
+      time,
+      amount,
+      categoryId ? Number(categoryId) : null,
+      description || null
+    ]
+  );
+  return result.insertId; // Devuelve el id de la transacción creada
+}
+
+// --- Agrega detalles de gasto (emoción y motivo) ---
+async function addExpenseDetail(transactionId, emotion, destination) {
+  await pool.execute(
+    'INSERT INTO expenses (transaction_id, emotion, destination) VALUES (?,?,?)',
+    [transactionId, emotion || null, destination || null]
+  );
+}
+
+// --- Agrega detalles de ingreso (fuente) ---
+async function addIncomeDetail(transactionId, source) {
+  await pool.execute(
+    'INSERT INTO incomes (transaction_id, source) VALUES (?,?)',
+    [transactionId, source || null]
+  );
+}
+
+// --- Elimina una transacción si pertenece al usuario ---
+async function deleteTransaction(userId, transactionId) {
+  // Solo permite borrar si la transacción pertenece al usuario autenticado
+  await pool.execute(
+    'DELETE FROM transactions WHERE id = ? AND user_id = ?',
+    [transactionId, userId]
+  );
+}
+
+module.exports = {
+  getAllByUser,
+  createTransaction,
+  addExpenseDetail,
+  addIncomeDetail,
+  deleteTransaction,
+};
