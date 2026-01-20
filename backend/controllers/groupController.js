@@ -212,6 +212,21 @@ exports.simplifyGroupDebts = async (req, res) => {
   }
 };
 
+// --- Obtener detalles de un grupo específico ---
+exports.getGroupDetails = async (req, res) => {
+  const { groupId } = req.params;
+  try {
+    const group = await groupModel.getGroupById(groupId);
+    if (!group) {
+      return res.status(404).json({ error: 'Grupo no encontrado' });
+    }
+    res.json(group);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'No se pudo obtener el grupo' });
+  }
+};
+
 // --- Listar grupos donde el usuario es miembro ---
 exports.listGroups = async (req, res) => {
   try {

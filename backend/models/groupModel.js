@@ -296,6 +296,17 @@ async function simplifyGroupDebts(groupId) {
   return settlementsWithNames;
 }
 
+// --- Obtiene los detalles de un grupo específico ---
+async function getGroupById(groupId) {
+  const [rows] = await pool.execute(
+    `SELECT id, name, description, created_by, created_at
+     FROM groups_
+     WHERE id = ?`,
+    [groupId]
+  );
+  return rows.length ? rows[0] : null;
+}
+
 // --- Lista los grupos donde el usuario es miembro ---
 async function listGroups(userId) {
   const [rows] = await pool.execute(
@@ -434,6 +445,7 @@ module.exports = {
   deleteExpense,
   addSettlement,
   simplifyGroupDebts,
+  getGroupById,
   listGroups,
   deleteGroup,
   listSettlements,

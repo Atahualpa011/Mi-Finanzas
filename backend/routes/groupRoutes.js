@@ -45,6 +45,16 @@ router.post('/:groupId/settlements', authenticate, groupMember, groupController.
 router.get('/:groupId/simplify', authenticate, groupMember, groupController.simplifyGroupDebts);
 // - El frontend llama a este endpoint para obtener sugerencias de pagos que simplifican las deudas del grupo.
 
+// --- Listar invitaciones de grupo pendientes ---
+// GET /api/groups/invitations
+router.get('/invitations', authenticate, groupController.listGroupInvitations);
+// - El frontend llama a este endpoint para mostrar las invitaciones de grupo pendientes para el usuario.
+
+// --- Obtener detalles de un grupo específico ---
+// GET /api/groups/:groupId
+router.get('/:groupId', authenticate, groupMember, groupController.getGroupDetails);
+// - El frontend llama a este endpoint para obtener nombre, descripción y fecha de creación del grupo.
+
 // --- Listar todos los grupos del usuario ---
 // GET /api/groups
 router.get('/', authenticate, groupController.listGroups);
@@ -69,11 +79,6 @@ router.get('/:groupId/settlements', authenticate, groupMember, groupController.l
 // POST /api/groups/:groupId/members/:memberId/invite
 router.post('/:groupId/members/:memberId/invite', authenticate, groupMember, groupController.inviteFriendToMember);
 // - El frontend llama a este endpoint para invitar a un amigo a ocupar un lugar de miembro representativo.
-
-// --- Listar invitaciones de grupo pendientes ---
-// GET /api/groups/invitations
-router.get('/invitations', authenticate, groupController.listGroupInvitations);
-// - El frontend llama a este endpoint para mostrar las invitaciones de grupo pendientes para el usuario.
 
 // --- Aceptar invitación de grupo ---
 // POST /api/groups/invitations/:invitationId/accept

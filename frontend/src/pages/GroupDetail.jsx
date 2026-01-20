@@ -18,15 +18,26 @@ export default function GroupDetail() {
   const [createdBy, setCreatedBy] = useState(null); // ID del creador del grupo
   const [myUserId, setMyUserId] = useState(null);   // user_id del usuario actual
   const [members, setMembers] = useState([]);       // Miembros del grupo
+  const [groupInfo, setGroupInfo] = useState(null); // Información del grupo (nombre, descripción, created_at)
   const [loading, setLoading] = useState(true);     // Estado de carga
 
   // --- Cargar miembros y datos del grupo al montar o refrescar ---
   useEffect(() => {
     const token = localStorage.getItem('token');
+    
+    // Obtener información del grupo
+    fetch(`/api/groups/${groupId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => {
+        setGroupInfo(data);
+        setCreatedBy(data.created_by);
+      })
+      .catch(err => console.error('Error al cargar info del grupo:', err));
+    
+    // Obtener miembros del grupo
     fetch(`/api/groups/${groupId}/members`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
-        setCreatedBy(data.created_by);
         setMyUserId(data.my_user_id);
         setMembers(data.members);
         setLoading(false);
@@ -99,9 +110,29 @@ export default function GroupDetail() {
         className="btn btn-secondary mb-3"
         onClick={() => navigate('/groups')}
       >
-        Volver
+        ← Volver
       </button>
-      <h2 className="mb-4 text-center">Detalle del grupo</h2>
+      
+      {/* Información del grupo */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <h2 className="card-title">{groupInfo?.name || 'Cargando...'}</h2>
+          {groupInfo?.description && (
+            <p className="text-muted mb-2">{groupInfo.description}</p>
+          )}
+          {groupInfo?.created_at && (
+            <p className="text-muted mb-0">
+              <small>
+                Creado el {new Date(groupInfo.created_at).toLocaleDateString('es-AR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </small>
+            </p>
+          )}
+        </div>
+      </div>
       <GroupMembers groupId={groupId} refresh={refresh} onChange={triggerRefresh} />
       <GroupAddExpense groupId={groupId} onExpenseAdded={triggerRefresh} />
       <GroupExpenses groupId={groupId} refresh={refresh} />
