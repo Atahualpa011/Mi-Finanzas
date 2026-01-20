@@ -4,7 +4,7 @@ const pool = require('../db'); // Importa la conexión a la base de datos
 async function getFriends(userId) {
   // Consulta SQL para traer amigos con datos de perfil y estado de la relación
   const [rows] = await pool.execute(
-    `SELECT f.friend_id, ud.username, ud.full_name, ud.country, f.since, f.amount_exp, f.total_spent
+    `SELECT f.friend_id, ud.username, ud.full_name, ud.country, f.since, f.amount_exp, f.total_spent, f.blocked
      FROM friends f
      JOIN users_data ud ON ud.user_id = f.friend_id
      WHERE f.user_id = ?`,
@@ -124,6 +124,118 @@ async function deleteFriendship(userId, friendId) {
   );
 }
 
+// --- Bloquear a un amigo ---
+async function blockFriend(userId, friendId) {
+  const [result] = await pool.execute(
+    `UPDATE friends 
+     SET blocked = 1 
+     WHERE (user_id = ? AND friend_id = ?) 
+        OR (user_id = ? AND friend_id = ?)`,
+    [userId, friendId, friendId, userId]
+  );
+  return result.affectedRows > 0;
+}
+
+// --- Desbloquear a un amigo ---
+async function unblockFriend(userId, friendId) {
+  const [result] = await pool.execute(
+    `UPDATE friends 
+     SET blocked = 0 
+     WHERE (user_id = ? AND friend_id = ?) 
+        OR (user_id = ? AND friend_id = ?)`,
+    [userId, friendId, friendId, userId]
+  );
+  return result.affectedRows > 0;
+}
+
+// --- Obtener estadísticas de amistad (gastos compartidos y transferencias) ---
+async function getFriendStats(userId, friendId) {
+  try {
+    // Obtener el username del amigo
+    const [friendData] = await pool.execute(
+      `SELECT username FROM users_data WHERE user_id = ?`,
+      [friendId]
+    );
+    const friendUsername = friendData[0]?.username || '';
+    
+    console.log('Buscando estadísticas para:', {
+      userId,
+      friendId,
+      friendUsername
+    });
+
+    // 1. GASTOS COMPARTIDOS - Buscar en múltiples fuentes
+    
+    // 1a. Transacciones de categoría "Gasto compartido" (23) que mencionen al amigo
+    const [directShared] = await pool.execute(
+      `SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
+       FROM transactions
+       WHERE user_id = ? 
+         AND category_id = 23
+         AND (description LIKE ? OR description LIKE ?)`,
+      [userId, `%${friendUsername}%`, `%${friendId}%`]
+    );
+    
+    // 1b. Gastos de grupos donde ambos son miembros y uno de ellos pagó
+    const [groupShared] = await pool.execute(
+      `SELECT COUNT(DISTINCT ge.id) as count, COALESCE(SUM(ge.amount), 0) as total
+       FROM group_expenses ge
+       JOIN group_members gm_payer ON gm_payer.id = ge.paid_by_member_id
+       JOIN group_members gm1 ON gm1.group_id = ge.group_id AND gm1.user_id = ?
+       JOIN group_members gm2 ON gm2.group_id = ge.group_id AND gm2.user_id = ?
+       WHERE gm_payer.user_id IN (?, ?)`,
+      [userId, friendId, userId, friendId]
+    );
+    
+    // Sumar todos los gastos compartidos
+    const totalSharedCount = 
+      parseInt(directShared[0].count) + 
+      parseInt(groupShared[0].count);
+    
+    const totalSharedAmount = 
+      parseFloat(directShared[0].total) + 
+      parseFloat(groupShared[0].total);
+    
+    console.log('Gastos compartidos:', {
+      directos: directShared[0],
+      grupos: groupShared[0],
+      total: { count: totalSharedCount, amount: totalSharedAmount }
+    });
+
+    // 2. TRANSFERENCIAS ENVIADAS
+    const [transfersSent] = await pool.execute(
+      `SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
+       FROM transfers
+       WHERE from_user_id = ? AND to_user_id = ?`,
+      [userId, friendId]
+    );
+    
+    console.log('Transferencias enviadas:', transfersSent[0]);
+
+    // 3. TRANSFERENCIAS RECIBIDAS
+    const [transfersReceived] = await pool.execute(
+      `SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
+       FROM transfers
+       WHERE from_user_id = ? AND to_user_id = ?`,
+      [friendId, userId]
+    );
+    
+    console.log('Transferencias recibidas:', transfersReceived[0]);
+
+    return {
+      shared_expenses_count: totalSharedCount || 0,
+      shared_expenses_total: totalSharedAmount || 0,
+      transfers_sent_count: parseInt(transfersSent[0].count) || 0,
+      transfers_sent_total: parseFloat(transfersSent[0].total) || 0,
+      transfers_received_count: parseInt(transfersReceived[0].count) || 0,
+      transfers_received_total: parseFloat(transfersReceived[0].total) || 0
+    };
+  } catch (error) {
+    console.error('Error en getFriendStats:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   getFriends,
   addFriend,
@@ -131,5 +243,8 @@ module.exports = {
   updateRequest,
   reconcileFriendship,
   getFriendshipDebt,
-  deleteFriendship, // <-- Agrega aquí
+  deleteFriendship,
+  blockFriend,
+  unblockFriend,
+  getFriendStats
 };

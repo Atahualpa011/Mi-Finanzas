@@ -34,4 +34,22 @@ router.delete('/:friendId', authenticate, friendController.delete);
 // - El frontend llama a este endpoint para eliminar un amigo de la lista.
 // - El controlador 'delete' elimina la relación de amistad en la base de datos.
 
+// --- Bloquear a un amigo ---
+// POST /api/friends/:id/block
+router.post('/:id/block', authenticate, friendController.blockFriend);
+// - El frontend llama a este endpoint para bloquear a un amigo.
+// - El controlador 'blockFriend' actualiza el estado de la relación en la base de datos.
+
+// --- Desbloquear a un amigo ---
+// POST /api/friends/:id/unblock
+router.post('/:id/unblock', authenticate, friendController.unblockFriend);
+// - El frontend llama a este endpoint para desbloquear a un amigo.
+// - El controlador 'unblockFriend' actualiza el estado de la relación en la base de datos.
+
+// --- Obtener estadísticas de un amigo ---
+// GET /api/friends/:id/stats
+router.get('/:id/stats', authenticate, friendController.getFriendStats);
+// - El frontend llama a este endpoint para obtener estadísticas de un amigo.
+// - El controlador 'getFriendStats' responde con los datos estadísticos del amigo.
+
 module.exports = router; // Exporta el router para ser usado en server.js

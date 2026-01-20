@@ -60,3 +60,45 @@ exports.delete = async (req, res) => {
     res.status(500).json({ error: 'No se pudo eliminar el amigo.' });
   }
 };
+
+// --- Bloquear a un amigo ---
+exports.blockFriend = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const friendId = parseInt(req.params.id);
+    
+    await friendModel.blockFriend(userId, friendId);
+    res.json({ message: 'Amigo bloqueado exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al bloquear amigo' });
+  }
+};
+
+// --- Desbloquear a un amigo ---
+exports.unblockFriend = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const friendId = parseInt(req.params.id);
+    
+    await friendModel.unblockFriend(userId, friendId);
+    res.json({ message: 'Amigo desbloqueado exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al desbloquear amigo' });
+  }
+};
+
+// --- Obtener estadísticas de un amigo ---
+exports.getFriendStats = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const friendId = parseInt(req.params.id);
+    
+    const stats = await friendModel.getFriendStats(userId, friendId);
+    res.json(stats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener estadísticas' });
+  }
+};
