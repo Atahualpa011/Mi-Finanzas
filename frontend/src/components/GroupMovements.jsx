@@ -5,6 +5,8 @@ export default function GroupMovements({ groupId, refresh }) {
   const [expenses, setExpenses] = useState([]);      // Lista de gastos del grupo
   const [settlements, setSettlements] = useState([]); // Lista de pagos/liquidaciones del grupo
   const [error, setError] = useState(null);          // Mensaje de error
+  const [filter, setFilter] = useState('all');       // Filtro: 'all', 'expense', 'settlement'
+  const [searchTerm, setSearchTerm] = useState(''); // Búsqueda por descripción
 
   // --- Cargar gastos y liquidaciones al montar o cuando cambian groupId/refresh ---
   useEffect(() => {
@@ -45,21 +47,106 @@ export default function GroupMovements({ groupId, refresh }) {
     }))
   ].sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)); // Ordena descendente por fecha+hora
 
+  // --- Aplicar filtros ---
+  const movimientosFiltrados = movimientos.filter(m => {
+    // Filtro por tipo
+    const matchesType = filter === 'all' || m.type === filter;
+    
+    // Filtro por búsqueda (descripción o nombre de quien pagó)
+    const matchesSearch = searchTerm === '' || 
+      m.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (m.by && m.by.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesType && matchesSearch;
+  });
+
   // --- Render principal ---
   return (
     <div className="mb-4">
-      <h4>Movimientos del grupo</h4>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0">Movimientos del grupo</h4>
+        <span className="badge bg-secondary">{movimientosFiltrados.length} de {movimientos.length}</span>
+      </div>
+
+      {/* Filtros */}
+      <div className="row g-2 mb-3">
+        <div className="col-md-6">
+          <div className="btn-group w-100" role="group">
+            <button
+              type="button"
+              className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
+              onClick={() => setFilter('all')}
+            >
+              📋 Todos ({movimientos.length})
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${filter === 'expense' ? 'btn-danger' : 'btn-outline-danger'}`}
+              onClick={() => setFilter('expense')}
+            >
+              🧾 Gastos ({expenses.length})
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${filter === 'settlement' ? 'btn-success' : 'btn-outline-success'}`}
+              onClick={() => setFilter('settlement')}
+            >
+              💸 Pagos ({settlements.length})
+            </button>
+          </div>
+        </div>
+        <div className="col-md-6">
+          <input
+            type="text"
+            className="form-control form-control-sm"
+            placeholder="🔍 Buscar por descripción o persona..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
       {error && <div className="alert alert-danger">{error}</div>}
+
+      {/* Lista de movimientos */}
       <ul className="list-group">
-        {movimientos.length === 0 ? (
-          <li className="list-group-item">Sin movimientos</li>
+        {movimientosFiltrados.length === 0 ? (
+          <li className="list-group-item text-center text-muted">
+            {searchTerm || filter !== 'all' 
+              ? 'No hay movimientos que coincidan con los filtros' 
+              : 'Sin movimientos'}
+          </li>
         ) : (
-          movimientos.map(m => (
+          movimientosFiltrados.map(m => (
             <li key={m.id} className="list-group-item">
-              {m.type === 'expense'
-                ? <>🧾 <b>{m.description}</b> — <span className="text-danger">${Number(m.amount).toFixed(2)}</span> <br /><small>Pagado por: {m.by} — {m.date} {m.time}</small></>
-                : <>💸 <b>{m.description}</b> — <span className="text-success">${Number(m.amount).toFixed(2)}</span> <br /><small>{m.date} {m.time}</small></>
-              }
+              <div className="d-flex justify-content-between align-items-start">
+                <div className="flex-grow-1">
+                  {m.type === 'expense' ? (
+                    <>
+                      <span className="badge bg-danger me-2">Gasto</span>
+                      <strong>{m.description}</strong>
+                      <br />
+                      <small className="text-muted">
+                        Pagado por: <span className="fw-bold">{m.by}</span> — {new Date(m.date).toLocaleDateString('es-AR')} {m.time}
+                      </small>
+                    </>
+                  ) : (
+                    <>
+                      <span className="badge bg-success me-2">Pago</span>
+                      <strong>{m.description}</strong>
+                      <br />
+                      <small className="text-muted">
+                        {new Date(m.date).toLocaleDateString('es-AR')} {m.time}
+                      </small>
+                    </>
+                  )}
+                </div>
+                <div className="text-end">
+                  <h5 className={`mb-0 ${m.type === 'expense' ? 'text-danger' : 'text-success'}`}>
+                    ${Number(m.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h5>
+                </div>
+              </div>
             </li>
           ))
         )}
