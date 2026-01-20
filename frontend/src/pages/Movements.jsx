@@ -40,6 +40,30 @@ export default function Movements() {
       .then(setTransactions);
   };
 
+  // --- Eliminar movimiento ---
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      '¿Estás seguro de que deseas eliminar este movimiento?\n\n' +
+      'Esta acción no se puede deshacer.'
+    );
+    
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/transactions/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      setMessage('Movimiento eliminado correctamente.');
+      setTimeout(() => setMessage(null), 3000);
+      reloadTransactions();
+    } else {
+      setMessage('Error al eliminar el movimiento.');
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
   // --- Aceptar sugerencia ---
   const handleAccept = async (id) => {
     const token = localStorage.getItem('token');
