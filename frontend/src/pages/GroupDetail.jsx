@@ -6,6 +6,7 @@ import GroupSummary from '../components/GroupSummary';
 import GroupSettlements from '../components/GroupSettlements';
 import GroupAddExpense from '../components/GroupAddExpense';
 import GroupMovements from '../components/GroupMovements';
+import GroupBudgets from '../components/GroupBudgets';
 
 // --- Página de detalle de grupo ---
 export default function GroupDetail() {
@@ -237,6 +238,7 @@ export default function GroupDetail() {
           )}
         </div>
       </div>
+      <GroupBudgets groupId={groupId} />
       <GroupMembers groupId={groupId} refresh={refresh} onChange={triggerRefresh} />
       <GroupAddExpense groupId={groupId} onExpenseAdded={triggerRefresh} />
       <GroupExpenses groupId={groupId} refresh={refresh} />

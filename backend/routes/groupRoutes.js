@@ -3,6 +3,7 @@ const router = express.Router();
 const authenticate = require('../middleware/authenticate');   // Middleware para verificar JWT
 const groupMember = require('../middleware/groupMember');     // Middleware para verificar membresía en el grupo
 const groupController = require('../controllers/groupController'); // Lógica de grupos
+const budgetController = require('../controllers/budgetController'); // Lógica de presupuestos
 
 // --- Crear un nuevo grupo ---
 // POST /api/groups
@@ -89,5 +90,21 @@ router.post('/invitations/:invitationId/accept', authenticate, groupController.a
 // POST /api/groups/:groupId/members/:memberId/leave
 router.post('/:groupId/members/:memberId/leave', authenticate, groupController.leaveGroup);
 // - El frontend llama a este endpoint para que el usuario deje el grupo (su miembro queda como representativo).
+
+// --- PRESUPUESTOS GRUPALES ---
+// GET /api/groups/:groupId/budgets - Listar presupuestos del grupo
+router.get('/:groupId/budgets', authenticate, groupMember, budgetController.getGroupBudgets);
+
+// POST /api/groups/:groupId/budgets - Crear presupuesto grupal
+router.post('/:groupId/budgets', authenticate, groupMember, budgetController.createGroupBudget);
+
+// GET /api/groups/:groupId/budgets/:id - Obtener presupuesto específico
+router.get('/:groupId/budgets/:id', authenticate, groupMember, budgetController.getGroupBudget);
+
+// PUT /api/groups/:groupId/budgets/:id - Actualizar presupuesto grupal
+router.put('/:groupId/budgets/:id', authenticate, groupMember, budgetController.updateGroupBudget);
+
+// DELETE /api/groups/:groupId/budgets/:id - Eliminar presupuesto grupal
+router.delete('/:groupId/budgets/:id', authenticate, groupMember, budgetController.deleteGroupBudget);
 
 module.exports = router; // Exporta el router para ser usado en server.js
