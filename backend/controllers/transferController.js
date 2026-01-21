@@ -1,5 +1,6 @@
 const { getFriendshipDebt } = require('../models/friendModel'); // Función para obtener la deuda entre dos usuarios
 const transferModel = require('../models/transferModel');       // Modelo para operaciones de transferencias
+const gamificationModel = require('../models/gamificationModel');
 
 // --- Crear una transferencia para saldar deuda con un amigo ---
 exports.create = async (req, res) => {
@@ -17,6 +18,15 @@ exports.create = async (req, res) => {
   try {
     // Registra la transferencia y actualiza saldos
     await transferModel.createTransfer(fromUserId, toUserId, amount, req.body.description || 'Saldar deuda');
+    
+    // Gamificación: verificar logros de transferencias
+    try {
+      await gamificationModel.checkSocialAchievements(fromUserId);
+      await gamificationModel.addExperience(fromUserId, 5);
+    } catch (gamError) {
+      console.error('Error en gamificación (no crítico):', gamError);
+    }
+    
     res.json({ message: 'Deuda saldada' }); // Responde al frontend
   } catch (err) {
     res.status(500).json({ error: err.message }); // Error de servidor

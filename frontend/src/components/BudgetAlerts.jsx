@@ -52,9 +52,9 @@ export default function BudgetAlerts() {
   };
 
   const getAlertIcon = (type) => {
-    if (type === 'exceeded') return '●';
-    if (type === 'threshold') return '⚠';
-    return '▲';
+    if (type === 'exceeded') return '🔴';
+    if (type === 'threshold') return '⚠️';
+    return '📊';
   };
 
   const getAlertClass = (type) => {

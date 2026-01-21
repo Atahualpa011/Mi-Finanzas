@@ -1,4 +1,5 @@
 const friendModel = require('../models/friendModel'); // Importa el modelo de amigos
+const gamificationModel = require('../models/gamificationModel');
 
 // --- Listar amigos confirmados ---
 exports.list = async (req, res) => {
@@ -43,6 +44,17 @@ exports.respond = async (req, res) => {
   try {
     // Llama al modelo para actualizar el estado de la solicitud
     await friendModel.updateRequest(req.user.userId, requesterId, status);
+    
+    // Gamificación: si aceptó la solicitud, verificar logros y dar XP
+    if (status === 'accepted') {
+      try {
+        await gamificationModel.checkSocialAchievements(req.user.userId);
+        await gamificationModel.addExperience(req.user.userId, 10);
+      } catch (gamError) {
+        console.error('Error en gamificación (no crítico):', gamError);
+      }
+    }
+    
     res.json({ message: `Solicitud ${status === 'accepted' ? 'aceptada' : 'rechazada'}` }); // Responde al frontend
   } catch (err) {
     res.status(500).json({ error: 'Error al responder solicitud' }); // Error de servidor

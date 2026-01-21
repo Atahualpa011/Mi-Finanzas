@@ -2,6 +2,7 @@ const pool = require('../db');
 const groupModel = require('../models/groupModel');
 const suggestedModel = require('../models/suggestedTransactionModel');
 const budgetModel = require('../models/budgetModel');
+const gamificationModel = require('../models/gamificationModel');
 
 // --- Crear grupo ---
 exports.createGroup = async (req, res) => {
@@ -19,6 +20,15 @@ exports.createGroup = async (req, res) => {
     // Crea el grupo y agrega al creador como miembro
     const groupId = await groupModel.createGroup(name, description, userId);
     await groupModel.addMember(groupId, userId, username, email, userId);
+    
+    // Gamificación: verificar logros de grupos y dar XP
+    try {
+      await gamificationModel.checkGroupAchievements(userId);
+      await gamificationModel.addExperience(userId, 15);
+    } catch (gamError) {
+      console.error('Error en gamificación (no crítico):', gamError);
+    }
+    
     res.json({ groupId });
   } catch (err) {
     console.error(err);
@@ -89,6 +99,16 @@ exports.addExpense = async (req, res) => {
     const memberUserIds = members.map(m => m.user_id);
     if (memberUserIds.length > 0) {
       await budgetModel.checkAndCreateGroupAlerts(groupId, memberUserIds);
+    }
+    
+    // Gamificación: verificar logros de gastos grupales para el pagador
+    if (payerUserId) {
+      try {
+        await gamificationModel.checkGroupAchievements(payerUserId);
+        await gamificationModel.addExperience(payerUserId, 5);
+      } catch (gamError) {
+        console.error('Error en gamificación (no crítico):', gamError);
+      }
     }
     
     res.json({ expenseId });

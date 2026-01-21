@@ -1,4 +1,5 @@
 const budgetModel = require('../models/budgetModel');
+const gamificationModel = require('../models/gamificationModel');
 
 // Obtener todos los presupuestos del usuario con progreso
 async function getBudgets(req, res) {
@@ -81,6 +82,14 @@ async function createBudget(req, res) {
       endDate || null,
       alertThreshold || 80
     );
+    
+    // Gamificación: verificar logros de presupuestos
+    try {
+      await gamificationModel.checkBudgetAchievements(userId);
+      await gamificationModel.addExperience(userId, 10);
+    } catch (gamError) {
+      console.error('Error en gamificación (no crítico):', gamError);
+    }
     
     res.status(201).json({ 
       message: 'Presupuesto creado exitosamente',

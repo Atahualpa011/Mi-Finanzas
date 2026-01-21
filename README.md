@@ -54,10 +54,18 @@ AppFinanzas/
 │   │   ├── categoryController.js
 │   │   ├── profileController.js
 │   │   ├── budgetController.js
+│   │   ├── gamificationController.js
 │   │   └── suggestedTransactionController.js
 │   ├── models/                # Acceso a datos (queries SQL)
 │   │   ├── userModel.js
 │   │   ├── transactionModel.js
+│   │   ├── groupModel.js
+│   │   ├── friendModel.js
+│   │   ├── transferModel.js
+│   │   ├── categoryModel.js
+│   │   ├── budgetModel.js
+│   │   ├── gamificationModel.js
+│   │   └── suggestedTransactionModel.js
 │   │   ├── groupModel.js
 │   │   ├── friendModel.js
 │   │   ├── transferModel.js
@@ -74,6 +82,7 @@ AppFinanzas/
 │   │   ├── categoryRoutes.js
 │   │   ├── profileRoutes.js
 │   │   ├── budgetRoutes.js
+│   │   ├── gamificationRoutes.js
 │   │   └── suggestedTransactionRoutes.js
 │   └── middleware/            # Middleware personalizado
 │       ├── authenticate.js    # Verificación de JWT
@@ -93,6 +102,7 @@ AppFinanzas/
 │   │   │   ├── GroupsList.jsx
 │   │   │   ├── GroupDetail.jsx
 │   │   │   ├── Budgets.jsx   # Gestión de presupuestos
+│   │   │   ├── Gamification.jsx # Sistema de gamificación
 │   │   │   ├── EmotionalAnalysis.jsx
 │   │   │   └── Profile.jsx
 │   │   ├── components/       # Componentes reutilizables
@@ -110,15 +120,23 @@ AppFinanzas/
 │   │   │   ├── GroupMovements.jsx
 │   │   │   ├── GroupAddExpense.jsx
 │   │   │   ├── GroupBudgets.jsx
-│   │   │   └── BudgetAlerts.jsx
+│   │   │   ├── BudgetAlerts.jsx
+│   │   │   ├── LevelProgress.jsx
+│   │   │   ├── AchievementCard.jsx
+│   │   │   ├── StreakDisplay.jsx
+│   │   │   ├── ChallengeCard.jsx
+│   │   │   ├── AchievementNotification.jsx
+│   │   │   └── UserLevelBadge.jsx
 │   │   └── hooks/            # Custom hooks
-│   │       └── useCurrency.js
+│   │       ├── useCurrency.js
+│   │       └── useAchievementNotifications.js
 │   ├── public/               # Archivos estáticos
 │   └── vite.config.js        # Configuración de Vite
 ├── config/                    # Archivos de configuración (vacío actualmente)
-└── db/                       # Scripts de base de datos
+├── db/                       # Scripts de base de datos
     ├── schema.sql            # Esquema completo de la base de datos
-    └── budgets_migration.sql # Migración de presupuestos y alertas
+    ├── budgets_migration.sql # Migración de presupuestos y alertas
+    └── gamification_migration.sql # Migración del sistema de gamificación
 ```
 
 ## Configuración e Instalación
@@ -253,7 +271,15 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 ### Módulo de Sugerencias
 - `suggested_transactions` - Transacciones sugeridas automáticamente
 
-**Para ver el schema completo:** Consultar `db/schema.sql` y `db/budgets_migration.sql`
+### Módulo de Gamificación
+- `achievements` - Catálogo de logros disponibles (30 logros predefinidos)
+- `user_achievements` - Logros desbloqueados por cada usuario
+- `user_streaks` - Rachas de uso consecutivo
+- `challenges` - Desafíos disponibles (diarios, semanales, mensuales)
+- `user_challenges` - Progreso de usuarios en desafíos
+- `user_levels` - Niveles y puntos de experiencia (XP)
+
+**Para ver el schema completo:** Consultar `db/schema.sql`, `db/budgets_migration.sql` y `db/gamification_migration.sql`
 
 ## API Endpoints
 
@@ -336,6 +362,16 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 - `POST /api/budgets/alerts/:id/read` - Marcar alerta como leída
 - `POST /api/budgets/alerts/read-all` - Marcar todas las alertas como leídas
 
+### Gamificación
+- `GET /api/gamification/dashboard` - Obtener panel completo de gamificación
+- `GET /api/gamification/achievements` - Listar todos los logros agrupados por categoría
+- `GET /api/gamification/achievements/:code` - Verificar logro específico
+- `GET /api/gamification/challenges` - Listar desafíos disponibles
+- `GET /api/gamification/challenges/user` - Listar desafíos del usuario
+- `POST /api/gamification/challenges/:id/accept` - Aceptar un desafío
+- `GET /api/gamification/leaderboard` - Obtener ranking global (top 10)
+- `GET /api/gamification/rank` - Obtener posición del usuario en el ranking
+
 ## Autenticación y Autorización
 
 La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
@@ -413,6 +449,45 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
 - Categorías personalizadas
 - Perfil de usuario editable
 
+### 8. Sistema de Gamificación
+- **Sistema de Niveles y Experiencia (XP):**
+  - Gana XP por cada acción (transacciones, presupuestos, amigos, grupos)
+  - Sube de nivel automáticamente (Nivel 2 = 100 XP, Nivel 3 = 200 XP, etc.)
+  - Barra de progreso visual con XP restante
+  
+- **Logros Desbloqueables (30 total):**
+  - **Hitos:** Primera transacción, 10 transacciones, 50, 100, 500, 1000
+  - **Rachas:** 3 días consecutivos, 7, 15, 30, 60, 90 días
+  - **Disciplina:** Cumplir presupuesto semanal/mensual, no exceder durante 3/6 meses
+  - **Social:** Primer amigo, transferencia, 5/10 amigos, primer/décimo grupo
+  - **Ahorros:** $1000, $5000, $10000, $50000, $100000 en ingresos totales
+  - Cada logro otorga XP adicional
+  
+- **Sistema de Rachas:**
+  - Seguimiento de días consecutivos con transacciones
+  - Visualización con íconos de fuego/rayo según duración
+  - Récord personal de racha más larga
+  - Mensajes motivacionales
+  
+- **Desafíos:**
+  - Diarios, semanales, mensuales y permanentes
+  - Progreso en tiempo real
+  - Recompensas de XP al completar
+  - Estados: disponible, activo, completado, fallido
+  
+- **Ranking Global:**
+  - Top 10 usuarios por nivel y XP
+  - Posición personal en el ranking
+  - Medallas para los primeros 3 lugares
+  - Visualización de logros desbloqueados por usuario
+  
+- **Integración Automática:**
+  - Verificación automática de logros tras cada acción
+  - Sistema de logros retroactivos (detecta logros de acciones pasadas)
+  - Actualización de racha automática al crear transacciones
+  - Progreso de desafíos actualizado en tiempo real
+  - Notificaciones toast al desbloquear logros
+
 ## Flujo de Navegación
 
 ```
@@ -422,6 +497,7 @@ Landing (/)
   │         ├─> Movements (/movements)
   │         ├─> Add Transaction (/add-transaction)
   │         ├─> Budgets (/budgets)
+  │         ├─> Gamification (/gamification)
   │         ├─> Friends (/friends)
   │         ├─> Groups List (/groups)
   │         │    └─> Group Detail (/groups/:id)
@@ -519,7 +595,7 @@ Este proyecto es de uso educativo/personal.
 
 ## Contribución
 
-Este proyecto fue desarrollado como una aplicación de gestión financiera personal y grupal.
+Este proyecto fue desarrollado como una aplicación de gestión financiera personal y grupal con sistema de gamificación.
 
 ---
 

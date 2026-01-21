@@ -310,6 +310,20 @@ async function checkAndCreateAlerts(userId) {
           VALUES (?, ?, ?, ?, ?)
         `, [budget.id, userId, alertType, percentageUsed, message]);
       }
+      
+      // Gamificación: Si el presupuesto terminó y NO se excedió, dar logro de disciplina
+      if (budget.end_date && new Date() >= new Date(budget.end_date) && percentageUsed < 100) {
+        try {
+          const gamificationModel = require('./gamificationModel');
+          const periodCode = budget.period === 'weekly' ? 'budget_met_weekly' : 
+                           budget.period === 'monthly' ? 'budget_met_monthly' : null;
+          if (periodCode) {
+            await gamificationModel.unlockAchievement(userId, periodCode);
+          }
+        } catch (gamError) {
+          console.error('Error al otorgar logro de disciplina presupuestaria:', gamError);
+        }
+      }
     }
   } catch (error) {
     console.error('Error al verificar alertas de presupuestos:', error);

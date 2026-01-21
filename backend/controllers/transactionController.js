@@ -1,5 +1,6 @@
 const transactionModel = require('../models/transactionModel');
 const budgetModel = require('../models/budgetModel');
+const gamificationModel = require('../models/gamificationModel');
 
 // --- Obtener todas las transacciones del usuario autenticado ---
 exports.getAll = async (req, res) => {
@@ -38,6 +39,21 @@ exports.create = async (req, res) => {
     // 4. Verificar presupuestos y crear alertas si es necesario
     if (type === 'expense') {
       await budgetModel.checkAndCreateAlerts(userId);
+    }
+
+    // 5. Gamificación: actualizar racha, verificar logros y agregar XP
+    try {
+      await gamificationModel.updateStreak(userId, date);
+      await gamificationModel.checkTransactionAchievements(userId);
+      await gamificationModel.checkSavingsAchievements(userId);
+      await gamificationModel.addExperience(userId, 5); // 5 XP por registrar transacción
+      
+      // Actualizar desafío de registro diario/semanal
+      await gamificationModel.updateChallengeProgress(userId, 'daily_register', 1);
+      await gamificationModel.updateChallengeProgress(userId, 'weekly_5_transactions', 1);
+    } catch (gamError) {
+      // No bloquear la creación de transacción si falla la gamificación
+      console.error('Error en gamificación (no crítico):', gamError);
     }
 
     return res.status(201).json({ message: 'Transacción creada', id: txId }); // Responde al frontend
