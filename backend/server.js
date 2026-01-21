@@ -16,6 +16,7 @@ const friendRoutes      = require('./routes/friendRoutes');      // Gestión de 
 const groupRoutes       = require('./routes/groupRoutes');       // Grupos y gastos compartidos
 const analysisRoutes    = require('./routes/analysisRoutes');    // Análisis y estadísticas
 const suggestedTransactionRoutes = require('./routes/suggestedTransactionRoutes'); // Transacciones sugeridas
+const budgetRoutes      = require('./routes/budgetRoutes');      // Presupuestos personales y grupales
 
 // --- Usar rutas bajo el prefijo /api ---
 app.use('/api',           authRoutes);        // /api/register, /api/login
@@ -27,6 +28,7 @@ app.use('/api/friends',    friendRoutes);     // /api/friends
 app.use('/api/groups',     groupRoutes);      // /api/groups
 app.use('/api/analysis',   analysisRoutes);   // /api/analysis/emotional
 app.use('/api/suggested-transactions', suggestedTransactionRoutes); // /api/suggested-transactions
+app.use('/api/budgets',    budgetRoutes);     // /api/budgets
 
 // --- Iniciar el servidor en el puerto 3001 ---
 app.listen(3001, () => console.log('API escuchando en puerto 3001'));

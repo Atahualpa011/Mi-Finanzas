@@ -77,21 +77,21 @@ export default function GroupMovements({ groupId, refresh }) {
               className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
               onClick={() => setFilter('all')}
             >
-              📋 Todos ({movimientos.length})
+              Todos ({movimientos.length})
             </button>
             <button
               type="button"
               className={`btn btn-sm ${filter === 'expense' ? 'btn-danger' : 'btn-outline-danger'}`}
               onClick={() => setFilter('expense')}
             >
-              🧾 Gastos ({expenses.length})
+              Gastos ({expenses.length})
             </button>
             <button
               type="button"
               className={`btn btn-sm ${filter === 'settlement' ? 'btn-success' : 'btn-outline-success'}`}
               onClick={() => setFilter('settlement')}
             >
-              💸 Pagos ({settlements.length})
+              Pagos ({settlements.length})
             </button>
           </div>
         </div>

@@ -18,6 +18,7 @@ export default function Sidebar({ expanded, setExpanded }) {
     { to: '/add-transaction', icon: 'bi-plus-circle', label: 'Agregar transacción' },
     { to: '/profile', icon: 'bi-person', label: 'Mi Perfil' },
     { to: '/movements', icon: 'bi-list-ul', label: 'Mis movimientos' },
+    { to: '/budgets', icon: 'bi-wallet2', label: 'Presupuestos' },
     { to: '/friends', icon: 'bi-people', label: 'Amigos' },
     { to: '/groups', icon: 'bi-collection', label: 'Grupos' },
     { to: '/emotional-analysis', icon: 'bi-bar-chart', label: 'Análisis emocional' },

@@ -15,6 +15,7 @@ import Friends         from './pages/Friends';
 import GroupsList      from './pages/GroupsList';
 import GroupDetail     from './pages/GroupDetail';
 import EmotionalAnalysis from './pages/EmotionalAnalysis';
+import Budgets         from './pages/Budgets';
 import './App.css';
 
 // --- Componente principal de la aplicación: define rutas y layout global ---
@@ -93,6 +94,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <GroupDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/budgets"
+            element={
+              <ProtectedRoute>
+                <Budgets />
               </ProtectedRoute>
             }
           />
