@@ -99,7 +99,7 @@ export default function GroupMovements({ groupId, refresh }) {
           <input
             type="text"
             className="form-control form-control-sm"
-            placeholder="🔍 Buscar por descripción o persona..."
+            placeholder="Buscar por descripción o persona..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

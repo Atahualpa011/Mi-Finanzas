@@ -1,16 +1,21 @@
 # AppFinanzas - Aplicación de Gestión de Finanzas Personales
 
-## 📋 Descripción General
+## Descripción General
 
 AppFinanzas es una aplicación web full-stack para la gestión de finanzas personales que permite a los usuarios:
 - Registrar y categorizar ingresos y gastos
-- Compartir gastos en grupos
+- Crear y gestionar presupuestos personales por categoría
+- Crear presupuestos compartidos en grupos
+- Recibir alertas automáticas de límites de presupuesto
+- Compartir gastos en grupos con división automática
 - Realizar transferencias entre amigos
+- Gestionar amistades (bloqueo, estadísticas, antigüedad)
 - Obtener análisis emocional de sus gastos
 - Recibir sugerencias automáticas de transacciones
 - Gestionar invitaciones y liquidaciones de grupos
+- Visualizar estadísticas de grupos e interacciones
 
-## 🏗️ Arquitectura del Proyecto
+## Arquitectura del Proyecto
 
 ### Stack Tecnológico
 
@@ -48,6 +53,7 @@ AppFinanzas/
 │   │   ├── analysisController.js
 │   │   ├── categoryController.js
 │   │   ├── profileController.js
+│   │   ├── budgetController.js
 │   │   └── suggestedTransactionController.js
 │   ├── models/                # Acceso a datos (queries SQL)
 │   │   ├── userModel.js
@@ -56,6 +62,7 @@ AppFinanzas/
 │   │   ├── friendModel.js
 │   │   ├── transferModel.js
 │   │   ├── categoryModel.js
+│   │   ├── budgetModel.js
 │   │   └── suggestedTransactionModel.js
 │   ├── routes/                # Definición de endpoints de la API
 │   │   ├── authRoutes.js
@@ -66,6 +73,7 @@ AppFinanzas/
 │   │   ├── analysisRoutes.js
 │   │   ├── categoryRoutes.js
 │   │   ├── profileRoutes.js
+│   │   ├── budgetRoutes.js
 │   │   └── suggestedTransactionRoutes.js
 │   └── middleware/            # Middleware personalizado
 │       ├── authenticate.js    # Verificación de JWT
@@ -84,6 +92,7 @@ AppFinanzas/
 │   │   │   ├── Friends.jsx   # Gestión de amigos
 │   │   │   ├── GroupsList.jsx
 │   │   │   ├── GroupDetail.jsx
+│   │   │   ├── Budgets.jsx   # Gestión de presupuestos
 │   │   │   ├── EmotionalAnalysis.jsx
 │   │   │   └── Profile.jsx
 │   │   ├── components/       # Componentes reutilizables
@@ -99,16 +108,20 @@ AppFinanzas/
 │   │   │   ├── GroupSettlements.jsx
 │   │   │   ├── GroupInvitations.jsx
 │   │   │   ├── GroupMovements.jsx
-│   │   │   └── GroupAddExpense.jsx
+│   │   │   ├── GroupAddExpense.jsx
+│   │   │   ├── GroupBudgets.jsx
+│   │   │   └── BudgetAlerts.jsx
 │   │   └── hooks/            # Custom hooks
 │   │       └── useCurrency.js
 │   ├── public/               # Archivos estáticos
 │   └── vite.config.js        # Configuración de Vite
 ├── config/                    # Archivos de configuración (vacío actualmente)
-└── db/                       # Scripts de base de datos (vacío actualmente)
+└── db/                       # Scripts de base de datos
+    ├── schema.sql            # Esquema completo de la base de datos
+    └── budgets_migration.sql # Migración de presupuestos y alertas
 ```
 
-## 🔧 Configuración e Instalación
+## Configuración e Instalación
 
 ### Prerrequisitos
 
@@ -210,149 +223,39 @@ La aplicación estará disponible en:
 - **Frontend:** http://localhost:5173
 - **Backend API:** http://localhost:3000/api
 
-## 📊 Esquema de Base de Datos
+## Esquema de Base de Datos
 
-### Tablas Principales
+La base de datos utiliza MySQL con las siguientes tablas principales:
 
-#### `users`
-```sql
-CREATE TABLE users (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  name VARCHAR(255),
-  phone VARCHAR(20),
-  currency VARCHAR(3) DEFAULT 'USD',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+### Módulo de Usuarios
+- `users` - Información de usuarios registrados
+- `users_data` - Datos adicionales del perfil (username, biografía)
 
-#### `transactions`
-```sql
-CREATE TABLE transactions (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  type ENUM('income', 'expense') NOT NULL,
-  category VARCHAR(100),
-  amount DECIMAL(10,2) NOT NULL,
-  description TEXT,
-  date DATE NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
+### Módulo de Transacciones
+- `transactions` - Registro de ingresos y gastos personales
+- `categories` - Categorías personalizadas y predeterminadas
 
-#### `friends`
-```sql
-CREATE TABLE friends (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  friend_id INT NOT NULL,
-  status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
+### Módulo de Amigos
+- `friends` - Relaciones de amistad entre usuarios
+- `transfers` - Transferencias de dinero entre amigos
 
-#### `transfers`
-```sql
-CREATE TABLE transfers (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  from_user_id INT NOT NULL,
-  to_user_id INT NOT NULL,
-  amount DECIMAL(10,2) NOT NULL,
-  description TEXT,
-  date DATE NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
+### Módulo de Grupos
+- `groups_` - Grupos creados por usuarios
+- `group_members` - Miembros de cada grupo
+- `group_expenses` - Gastos compartidos en grupos
+- `group_settlements` - Liquidaciones de deudas grupales
 
-#### `groups`
-```sql
-CREATE TABLE groups (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  description TEXT,
-  created_by INT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
-);
-```
+### Módulo de Presupuestos
+- `budgets` - Presupuestos personales por categoría
+- `group_budgets` - Presupuestos compartidos en grupos
+- `budget_alerts` - Alertas automáticas de límites excedidos
 
-#### `group_members`
-```sql
-CREATE TABLE group_members (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  group_id INT NOT NULL,
-  user_id INT NOT NULL,
-  role ENUM('admin', 'member') DEFAULT 'member',
-  status ENUM('pending', 'accepted', 'rejected') DEFAULT 'accepted',
-  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
+### Módulo de Sugerencias
+- `suggested_transactions` - Transacciones sugeridas automáticamente
 
-#### `group_expenses`
-```sql
-CREATE TABLE group_expenses (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  group_id INT NOT NULL,
-  paid_by INT NOT NULL,
-  amount DECIMAL(10,2) NOT NULL,
-  description TEXT,
-  category VARCHAR(100),
-  date DATE NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
-  FOREIGN KEY (paid_by) REFERENCES users(id) ON DELETE CASCADE
-);
-```
+**Para ver el schema completo:** Consultar `db/schema.sql` y `db/budgets_migration.sql`
 
-#### `group_expense_splits`
-```sql
-CREATE TABLE group_expense_splits (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  expense_id INT NOT NULL,
-  user_id INT NOT NULL,
-  amount DECIMAL(10,2) NOT NULL,
-  FOREIGN KEY (expense_id) REFERENCES group_expenses(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-#### `categories`
-```sql
-CREATE TABLE categories (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT,
-  name VARCHAR(100) NOT NULL,
-  type ENUM('income', 'expense') NOT NULL,
-  is_default BOOLEAN DEFAULT FALSE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-#### `suggested_transactions`
-```sql
-CREATE TABLE suggested_transactions (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  type ENUM('income', 'expense') NOT NULL,
-  category VARCHAR(100),
-  amount DECIMAL(10,2) NOT NULL,
-  description TEXT,
-  suggested_date DATE NOT NULL,
-  status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Autenticación
 - `POST /api/register` - Registro de usuario
@@ -380,6 +283,9 @@ CREATE TABLE suggested_transactions (
 - `POST /api/friends/request` - Enviar solicitud de amistad
 - `POST /api/friends/:id/accept` - Aceptar solicitud
 - `POST /api/friends/:id/reject` - Rechazar solicitud
+- `POST /api/friends/:id/block` - Bloquear amigo
+- `POST /api/friends/:id/unblock` - Desbloquear amigo
+- `GET /api/friends/:id/stats` - Obtener estadísticas de interacción con un amigo
 - `DELETE /api/friends/:id` - Eliminar amistad
 
 ### Transferencias
@@ -392,13 +298,25 @@ CREATE TABLE suggested_transactions (
 - `GET /api/groups/:id` - Obtener detalles de un grupo
 - `PUT /api/groups/:id` - Actualizar grupo
 - `DELETE /api/groups/:id` - Eliminar grupo
+- `GET /api/groups/:id/members` - Listar miembros del grupo
+- `POST /api/groups/:id/members` - Agregar miembro al grupo
+- `DELETE /api/groups/:id/members/:memberId` - Eliminar miembro del grupo
 - `POST /api/groups/:id/invite` - Invitar miembro
-- `GET /api/groups/:id/invitations` - Listar invitaciones
-- `POST /api/groups/:id/invitations/:invId/respond` - Responder invitación
+- `GET /api/groups/invitations` - Listar invitaciones
+- `POST /api/groups/invitations/:invId/accept` - Aceptar invitación
+- `POST /api/groups/invitations/:invId/reject` - Rechazar invitación
 - `POST /api/groups/:id/expenses` - Crear gasto grupal
 - `GET /api/groups/:id/expenses` - Listar gastos del grupo
 - `GET /api/groups/:id/summary` - Obtener resumen de deudas
-- `GET /api/groups/:id/settlements` - Calcular liquidaciones óptimas
+- `GET /api/groups/:id/settlements` - Listar liquidaciones
+- `POST /api/groups/:id/settlements` - Registrar liquidación
+- `GET /api/groups/:id/simplify` - Calcular liquidaciones óptimas
+- `POST /api/groups/:id/members/:memberId/leave` - Salir del grupo
+- `GET /api/groups/:id/budgets` - Listar presupuestos del grupo
+- `POST /api/groups/:id/budgets` - Crear presupuesto grupal
+- `GET /api/groups/:id/budgets/:budgetId` - Obtener presupuesto grupal
+- `PUT /api/groups/:id/budgets/:budgetId` - Actualizar presupuesto grupal
+- `DELETE /api/groups/:id/budgets/:budgetId` - Eliminar presupuesto grupal
 
 ### Análisis
 - `POST /api/analysis/emotional` - Obtener análisis emocional de gastos
@@ -408,7 +326,17 @@ CREATE TABLE suggested_transactions (
 - `POST /api/suggested-transactions/:id/accept` - Aceptar sugerencia
 - `POST /api/suggested-transactions/:id/reject` - Rechazar sugerencia
 
-## 🔐 Autenticación y Autorización
+### Presupuestos
+- `GET /api/budgets` - Listar presupuestos personales con progreso
+- `POST /api/budgets` - Crear presupuesto personal
+- `GET /api/budgets/:id` - Obtener presupuesto específico
+- `PUT /api/budgets/:id` - Actualizar presupuesto
+- `DELETE /api/budgets/:id` - Eliminar presupuesto
+- `GET /api/budgets/alerts/all` - Obtener alertas de presupuesto
+- `POST /api/budgets/alerts/:id/read` - Marcar alerta como leída
+- `POST /api/budgets/alerts/read-all` - Marcar todas las alertas como leídas
+
+## Autenticación y Autorización
 
 La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
 
@@ -423,7 +351,7 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
 **`authenticate.js`**: Verifica que el usuario esté autenticado
 **`groupMember.js`**: Verifica que el usuario sea miembro del grupo
 
-## 🎨 Funcionalidades Principales
+## Funcionalidades Principales
 
 ### 1. Dashboard
 - Resumen de ingresos y gastos
@@ -442,26 +370,50 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
 - Envío y aceptación de solicitudes de amistad
 - Transferencias de dinero entre amigos
 - Historial de transferencias
+- Bloqueo y desbloqueo de amigos
+- Visualización de antigüedad de la amistad
+- Estadísticas de interacción (gastos compartidos, transferencias)
 
 ### 4. Grupos y Gastos Compartidos
-- Creación de grupos
+- Creación de grupos con descripción
 - Invitación de miembros
 - Registro de gastos compartidos con división automática
 - Cálculo de deudas entre miembros
 - Algoritmo de liquidación óptima (minimiza transacciones)
 - Visualización de resumen de deudas
+- Historial de movimientos (gastos y pagos)
+- Filtrado de movimientos por tipo
+- Búsqueda en el historial
+- Estadísticas de grupo (total movimientos, mayor gastador, mayor saldo)
+- Visualización de antigüedad del grupo
+- Presupuestos grupales compartidos
 
-### 5. Análisis Emocional
+### 5. Sistema de Presupuestos
+- Creación de presupuestos personales por categoría
+- Presupuestos grupales compartidos
+- Períodos configurables (semanal, mensual, anual)
+- Umbrales de alerta personalizables
+- Seguimiento automático de gastos vs presupuesto
+- Visualización con barras de progreso
+- Estados visuales (OK, Advertencia, Excedido)
+- Sistema de alertas automáticas:
+  - Alerta al alcanzar el umbral configurado
+  - Alerta al exceder el presupuesto
+  - Alerta al acercarse al límite
+- Gestión de alertas (marcar como leídas)
+- Prevención de alertas duplicadas
+
+### 6. Análisis Emocional
 - Análisis del impacto emocional de los gastos
 - Categorización emocional de transacciones
 - Visualizaciones y recomendaciones
 
-### 6. Personalización
+### 7. Personalización
 - Selección de moneda preferida
 - Categorías personalizadas
 - Perfil de usuario editable
 
-## 🌐 Flujo de Navegación
+## Flujo de Navegación
 
 ```
 Landing (/)
@@ -469,6 +421,7 @@ Landing (/)
   │    └─> Dashboard (/dashboard) [Protegido]
   │         ├─> Movements (/movements)
   │         ├─> Add Transaction (/add-transaction)
+  │         ├─> Budgets (/budgets)
   │         ├─> Friends (/friends)
   │         ├─> Groups List (/groups)
   │         │    └─> Group Detail (/groups/:id)
@@ -479,7 +432,7 @@ Landing (/)
        └─> Login (/login)
 ```
 
-## 🛡️ Seguridad
+## Seguridad
 
 - **Contraseñas**: Hasheadas con bcrypt (factor de coste: 10)
 - **JWT**: Tokens con expiración configurable
@@ -487,7 +440,7 @@ Landing (/)
 - **CORS**: Configurado para permitir peticiones del frontend
 - **Variables de entorno**: Credenciales almacenadas en `.env` (no versionadas)
 
-## 🚀 Despliegue
+## Despliegue
 
 ### Backend
 1. Configurar variables de entorno en el servidor
@@ -504,7 +457,7 @@ Landing (/)
 2. Ejecutar scripts de creación de tablas
 3. Configurar credenciales en `.env`
 
-## 🔍 Solución de Problemas
+## Solución de Problemas
 
 ### MySQL no se conecta
 - Verificar que el servicio MySQL esté corriendo: `services.msc` en Windows
@@ -525,7 +478,7 @@ Landing (/)
 - Verificar que existan registros en `suggested_transactions` con `status='pending'`
 - El modal se abre automáticamente al cargar la página Movements
 
-## 📝 Convenciones de Código
+## Convenciones de Código
 
 ### Backend
 - Controladores: Lógica de negocio, validaciones
@@ -541,7 +494,7 @@ Landing (/)
 - Estilos con Bootstrap y clases personalizadas
 - Comentarios en español
 
-## 📖 Notas para Desarrollo
+## Notas para Desarrollo
 
 ### Agregar un nuevo endpoint
 1. Crear función en el controlador correspondiente (`controllers/`)
@@ -560,11 +513,11 @@ Landing (/)
 - Siempre usar consultas parametrizadas para prevenir SQL injection
 - Ejemplo: `db.query('SELECT * FROM users WHERE id = ?', [userId])`
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es de uso educativo/personal.
 
-## 👥 Contribución
+## Contribución
 
 Este proyecto fue desarrollado como una aplicación de gestión financiera personal y grupal.
 
