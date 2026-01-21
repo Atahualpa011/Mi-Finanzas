@@ -1,4 +1,5 @@
 const transactionModel = require('../models/transactionModel');
+const budgetModel = require('../models/budgetModel');
 
 // --- Obtener todas las transacciones del usuario autenticado ---
 exports.getAll = async (req, res) => {
@@ -32,6 +33,11 @@ exports.create = async (req, res) => {
     } else {
       // 3. Si es ingreso, guarda detalles en 'incomes' (fuente)
       await transactionModel.addIncomeDetail(txId, source);
+    }
+
+    // 4. Verificar presupuestos y crear alertas si es necesario
+    if (type === 'expense') {
+      await budgetModel.checkAndCreateAlerts(userId);
     }
 
     return res.status(201).json({ message: 'Transacción creada', id: txId }); // Responde al frontend

@@ -13,4 +13,9 @@ router.get('/:id', budgetController.getBudget);            // Obtener presupuest
 router.put('/:id', budgetController.updateBudget);         // Actualizar presupuesto
 router.delete('/:id', budgetController.deleteBudget);      // Eliminar presupuesto
 
+// --- Rutas de alertas ---
+router.get('/alerts/all', budgetController.getUserAlerts); // Obtener alertas del usuario
+router.post('/alerts/read-all', budgetController.markAllAlertsAsRead); // Marcar todas como leídas
+router.post('/alerts/:id/read', budgetController.markAlertAsRead); // Marcar alerta como leída
+
 module.exports = router;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BudgetAlerts from '../components/BudgetAlerts';
 
 export default function Budgets() {
   const navigate = useNavigate();
@@ -182,6 +183,9 @@ export default function Budgets() {
           + Nuevo Presupuesto
         </button>
       </div>
+
+      {/* Alertas de presupuestos */}
+      <BudgetAlerts />
 
       {budgets.length === 0 ? (
         <div className="alert alert-info">

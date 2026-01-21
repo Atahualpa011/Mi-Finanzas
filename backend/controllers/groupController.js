@@ -1,6 +1,7 @@
 const pool = require('../db');
 const groupModel = require('../models/groupModel');
 const suggestedModel = require('../models/suggestedTransactionModel');
+const budgetModel = require('../models/budgetModel');
 
 // --- Crear grupo ---
 exports.createGroup = async (req, res) => {
@@ -79,6 +80,17 @@ exports.addExpense = async (req, res) => {
         groupExpenseId: expenseId
       });
     }
+    
+    // Verificar presupuestos grupales y crear alertas
+    const [members] = await pool.execute(
+      'SELECT user_id FROM group_members WHERE group_id = ? AND user_id IS NOT NULL',
+      [groupId]
+    );
+    const memberUserIds = members.map(m => m.user_id);
+    if (memberUserIds.length > 0) {
+      await budgetModel.checkAndCreateGroupAlerts(groupId, memberUserIds);
+    }
+    
     res.json({ expenseId });
   } catch (err) {
     if (err.message.includes('shares')) {

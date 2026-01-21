@@ -302,6 +302,54 @@ async function deleteGroupBudget(req, res) {
   }
 }
 
+// --- ALERTAS DE PRESUPUESTOS ---
+
+// Obtener alertas del usuario
+async function getUserAlerts(req, res) {
+  try {
+    const userId = req.user.userId;
+    const onlyUnread = req.query.unread === 'true';
+    
+    const alerts = await budgetModel.getUserAlerts(userId, onlyUnread);
+    res.json(alerts);
+  } catch (error) {
+    console.error('Error al obtener alertas:', error);
+    res.status(500).json({ error: 'Error al obtener alertas' });
+  }
+}
+
+// Marcar alerta como leída
+async function markAlertAsRead(req, res) {
+  try {
+    const userId = req.user.userId;
+    const alertId = req.params.id;
+    
+    const success = await budgetModel.markAlertAsRead(alertId, userId);
+    
+    if (!success) {
+      return res.status(404).json({ error: 'Alerta no encontrada' });
+    }
+    
+    res.json({ message: 'Alerta marcada como leída' });
+  } catch (error) {
+    console.error('Error al marcar alerta como leída:', error);
+    res.status(500).json({ error: 'Error al marcar alerta como leída' });
+  }
+}
+
+// Marcar todas las alertas como leídas
+async function markAllAlertsAsRead(req, res) {
+  try {
+    const userId = req.user.userId;
+    const count = await budgetModel.markAllAlertsAsRead(userId);
+    
+    res.json({ message: `${count} alertas marcadas como leídas` });
+  } catch (error) {
+    console.error('Error al marcar alertas como leídas:', error);
+    res.status(500).json({ error: 'Error al marcar alertas como leídas' });
+  }
+}
+
 module.exports = {
   getBudgets,
   getBudget,
@@ -313,5 +361,9 @@ module.exports = {
   getGroupBudget,
   createGroupBudget,
   updateGroupBudget,
-  deleteGroupBudget
+  deleteGroupBudget,
+  // Alertas
+  getUserAlerts,
+  markAlertAsRead,
+  markAllAlertsAsRead
 };
