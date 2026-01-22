@@ -106,32 +106,115 @@ export default function Movements() {
   // --- Render principal ---
   return (
     <>
-        <h2 className="mb-4 text-center">Mis movimientos</h2>
-        {message && <div className="alert alert-success">{message}</div>}
+      <div className="mb-4">
+        <h2 
+          className="mb-1" 
+          style={{ 
+            fontWeight: '700', 
+            color: 'var(--text-primary)',
+            fontSize: '1.75rem'
+          }}
+        >
+          <i className="bi bi-list-ul me-2" style={{ color: 'var(--primary)' }}></i>
+          Mis movimientos
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+          Gestiona tus ingresos y gastos personales
+        </p>
+      </div>
+
+      {message && (
+        <div 
+          className="alert alert-success" 
+          style={{
+            backgroundColor: 'var(--success-light)',
+            border: '1px solid var(--success)',
+            borderRadius: 'var(--radius-md)',
+            color: 'var(--success)'
+          }}
+        >
+          <i className="bi bi-check-circle me-2"></i>
+          {message}
+        </div>
+      )}
 
         {/* Sugerencias pendientes */}
         {suggestions.length > 0 && (
-          <div className="alert alert-info">
-            <h5>Movimientos sugeridos de grupos</h5>
-            <ul className="list-group mb-2">
+          <div 
+            className="alert"
+            style={{
+              backgroundColor: 'var(--info-light)',
+              border: '1px solid var(--info)',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--spacing-lg)',
+              marginBottom: 'var(--spacing-lg)'
+            }}
+          >
+            <h5 
+              className="mb-3"
+              style={{
+                fontWeight: '600',
+                color: 'var(--info)',
+                fontSize: '1.1rem'
+              }}
+            >
+              <i className="bi bi-lightbulb me-2"></i>
+              Movimientos sugeridos de grupos
+            </h5>
+            <ul className="list-group mb-3">
               {suggestions.map((s, i) => (
-                <li key={s.id} className="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <li 
+                  key={s.id} 
+                  className="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center"
+                  style={{
+                    border: '1px solid var(--border-light)',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: 'var(--spacing-xs)',
+                    backgroundColor: 'var(--bg-primary)',
+                    padding: 'var(--spacing-md)'
+                  }}
+                >
                   <span>
-                    <b>{s.type === 'expense' ? 'Gasto' : 'Ingreso'}:</b> {currencyData.symbol}{s.amount} <br />
-                    <span className="text-muted">{s.description}</span>
+                    <span 
+                      className="badge me-2"
+                      style={{
+                        backgroundColor: s.type === 'expense' ? 'var(--danger-light)' : 'var(--success-light)',
+                        color: s.type === 'expense' ? 'var(--danger)' : 'var(--success)',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: 'var(--radius-full)',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                      }}
+                    >
+                      {s.type === 'expense' ? 'Gasto' : 'Ingreso'}
+                    </span>
+                    <b style={{ color: 'var(--text-primary)' }}>{currencyData.symbol}{s.amount}</b>
+                    <br />
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                      {s.description}
+                    </span>
                   </span>
                   <span className="mt-2 mt-md-0">
                     <button
-                      className="btn btn-primary btn-sm"
+                      className="btn-primary-custom"
+                      style={{
+                        padding: '0.375rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
                       onClick={() => setModalIndex(i)}
                     >
+                      <i className="bi bi-eye me-1"></i>
                       Revisar
                     </button>
                   </span>
                 </li>
               ))}
             </ul>
-            <small>
+            <small style={{ color: 'var(--text-secondary)' }}>
+              <i className="bi bi-info-circle me-1"></i>
               Podés aceptar o rechazar cada sugerencia cuando lo desees.<br />
               Si rechazas, deberás añadir el movimiento manualmente si lo deseas.
             </small>
@@ -140,59 +223,193 @@ export default function Movements() {
 
         {/* Modal reutilizable para aceptar/rechazar sugerencias */}
         {modalIndex !== null && (
-          <div className="modal fade show" tabIndex="-1" style={{ display: 'block', background: 'rgba(0,0,0,0.4)' }}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">
+          <div className="modal fade show" tabIndex="-1" style={{ display: 'block', background: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div 
+                className="modal-content"
+                style={{
+                  border: 'none',
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-xl)'
+                }}
+              >
+                <div 
+                  className="modal-header"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    borderBottom: '1px solid var(--border-light)',
+                    borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+                    padding: 'var(--spacing-lg)'
+                  }}
+                >
+                  <h5 
+                    className="modal-title"
+                    style={{
+                      fontWeight: '600',
+                      color: 'var(--text-primary)',
+                      fontSize: '1.1rem'
+                    }}
+                  >
+                    <i 
+                      className={`bi ${modalSuggestion.type === 'expense' ? 'bi-arrow-down-circle' : 'bi-arrow-up-circle'} me-2`}
+                      style={{ color: modalSuggestion.type === 'expense' ? 'var(--danger)' : 'var(--success)' }}
+                    ></i>
                     {modalSuggestion.type === 'expense' ? 'Añadir gasto sugerido' : 'Añadir ingreso sugerido'}
                   </h5>
-                  <button type="button" className="btn-close" onClick={() => setModalIndex(null)}></button>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setModalIndex(null)}
+                  ></button>
                 </div>
-                <div className="modal-body">
-                  <p>
-                    <b>Monto:</b> {currencyData.symbol}{modalSuggestion.amount}
-                    <br />
-                    <b>Detalle:</b> {modalSuggestion.description}
-                  </p>
-                  <p className="text-muted">
-                    Sugerencia {modalIndex + 1} de {suggestions.length}
-                    <br />
-                    Si no lo añadís ahora, deberás hacerlo manualmente si lo deseas.
-                  </p>
+                <div 
+                  className="modal-body"
+                  style={{
+                    padding: 'var(--spacing-lg)'
+                  }}
+                >
+                  <div className="mb-3">
+                    <p className="mb-2">
+                      <strong style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>MONTO</strong>
+                      <br />
+                      <span style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                        {currencyData.symbol}{modalSuggestion.amount}
+                      </span>
+                    </p>
+                    <p className="mb-0">
+                      <strong style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>DETALLE</strong>
+                      <br />
+                      <span style={{ color: 'var(--text-primary)' }}>
+                        {modalSuggestion.description}
+                      </span>
+                    </p>
+                  </div>
+                  <div 
+                    style={{
+                      backgroundColor: 'var(--bg-secondary)',
+                      padding: 'var(--spacing-md)',
+                      borderRadius: 'var(--radius-md)',
+                      marginTop: 'var(--spacing-md)'
+                    }}
+                  >
+                    <p className="mb-1" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                      <i className="bi bi-info-circle me-1"></i>
+                      Sugerencia <strong>{modalIndex + 1}</strong> de <strong>{suggestions.length}</strong>
+                    </p>
+                    <p className="mb-0" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                      Si no lo añadís ahora, deberás hacerlo manualmente si lo deseas.
+                    </p>
+                  </div>
                 </div>
-                <div className="modal-footer d-flex justify-content-between">
+                <div 
+                  className="modal-footer"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    borderTop: '1px solid var(--border-light)',
+                    borderRadius: '0 0 var(--radius-lg) var(--radius-lg)',
+                    padding: 'var(--spacing-lg)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: 'var(--spacing-sm)'
+                  }}
+                >
                   <div>
                     <button
-                      className="btn btn-outline-secondary me-2"
+                      className="btn-secondary-custom me-2"
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        border: 'none',
+                        cursor: modalIndex === 0 ? 'not-allowed' : 'pointer',
+                        opacity: modalIndex === 0 ? 0.5 : 1
+                      }}
                       disabled={modalIndex === 0}
                       onClick={() => setModalIndex(modalIndex - 1)}
                     >
+                      <i className="bi bi-chevron-left me-1"></i>
                       Anterior
                     </button>
                     <button
-                      className="btn btn-outline-secondary"
+                      className="btn-secondary-custom"
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        border: 'none',
+                        cursor: modalIndex === suggestions.length - 1 ? 'not-allowed' : 'pointer',
+                        opacity: modalIndex === suggestions.length - 1 ? 0.5 : 1
+                      }}
                       disabled={modalIndex === suggestions.length - 1}
                       onClick={() => setModalIndex(modalIndex + 1)}
                     >
                       Siguiente
+                      <i className="bi bi-chevron-right ms-1"></i>
                     </button>
                   </div>
                   <div>
                     <button
-                      className="btn btn-success me-2"
+                      className="btn me-2"
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        border: '1px solid var(--success)',
+                        backgroundColor: 'var(--success)',
+                        color: 'white',
+                        borderRadius: 'var(--radius-md)',
+                        cursor: 'pointer',
+                        transition: 'all var(--transition-fast)'
+                      }}
                       onClick={() => handleAccept(modalSuggestion.id)}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#0d9b5f';
+                        e.target.style.transform = 'translateY(-1px)';
+                        e.target.style.boxShadow = 'var(--shadow-md)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'var(--success)';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     >
+                      <i className="bi bi-check-circle me-1"></i>
                       Añadir a mis movimientos
                     </button>
                     <button
-                      className="btn btn-outline-danger"
+                      className="btn me-2"
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        border: '1px solid var(--danger)',
+                        backgroundColor: 'transparent',
+                        color: 'var(--danger)',
+                        borderRadius: 'var(--radius-md)',
+                        cursor: 'pointer',
+                        transition: 'all var(--transition-fast)'
+                      }}
                       onClick={() => handleReject(modalSuggestion.id)}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = 'var(--danger-light)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'transparent';
+                      }}
                     >
+                      <i className="bi bi-x-circle me-1"></i>
                       Rechazar
                     </button>
                     <button
-                      className="btn btn-secondary ms-2"
+                      className="btn-secondary-custom"
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
                       onClick={() => setModalIndex(null)}
                     >
                       Cerrar
@@ -204,84 +421,204 @@ export default function Movements() {
           </div>
         )}
 
-        <div className="row">
+        <div className="row g-4">
           {/* Tabla de gastos */}
-          <div className="col-md-6 mb-4">
-            <h4 className="mb-3 text-danger">Gastos</h4>
-            {transactions.length === 0 ? (
-              <div className="alert alert-info">No hay gastos registrados.</div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Monto</th>
-                      <th>Fecha</th>
-                      <th>Categoría</th>
-                      <th>Descripción</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.filter(tx => tx.type === 'expense').map(tx => (
-                      <tr key={tx.id}>
-                        <td>{currencyData.symbol}{Number(tx.amount).toFixed(2)}</td>
-                        <td>{new Date(tx.date).toLocaleString()}</td>
-                        <td>{tx.category || 'Sin categoría'}</td>
-                        <td>{tx.description || '-'}</td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleDelete(tx.id)}
-                          >
-                            Eliminar
-                          </button>
-                        </td>
+          <div className="col-md-6">
+            <div 
+              className="card-custom"
+              style={{
+                padding: 'var(--spacing-lg)',
+                backgroundColor: 'var(--bg-primary)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-light)',
+                boxShadow: 'var(--shadow-sm)',
+                height: '100%'
+              }}
+            >
+              <h4 
+                className="mb-4"
+                style={{
+                  fontWeight: '600',
+                  color: 'var(--danger)',
+                  fontSize: '1.25rem'
+                }}
+              >
+                <i className="bi bi-arrow-down-circle me-2"></i>
+                Gastos
+              </h4>
+              {transactions.filter(tx => tx.type === 'expense').length === 0 ? (
+                <div 
+                  className="text-center py-5"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--spacing-xl)'
+                  }}
+                >
+                  <i className="bi bi-inbox" style={{ fontSize: '3rem', color: 'var(--text-muted)' }}></i>
+                  <p className="mt-3 mb-0" style={{ color: 'var(--text-secondary)' }}>
+                    No hay gastos registrados.
+                  </p>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table-custom mb-0">
+                    <thead>
+                      <tr>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {transactions.filter(tx => tx.type === 'expense').map(tx => (
+                        <tr key={tx.id}>
+                          <td style={{ fontWeight: '600', color: 'var(--danger)' }}>
+                            {currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            {new Date(tx.date).toLocaleString()}
+                          </td>
+                          <td style={{ color: 'var(--text-primary)' }}>
+                            {tx.category || 'Sin categoría'}
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            {tx.description || '-'}
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-sm"
+                              style={{
+                                padding: '0.25rem 0.75rem',
+                                fontSize: '0.75rem',
+                                fontWeight: '500',
+                                border: '1px solid var(--danger)',
+                                backgroundColor: 'transparent',
+                                color: 'var(--danger)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                transition: 'all var(--transition-fast)'
+                              }}
+                              onClick={() => handleDelete(tx.id)}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = 'var(--danger-light)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              <i className="bi bi-trash me-1"></i>
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
           {/* Tabla de ingresos */}
-          <div className="col-md-6 mb-4">
-            <h4 className="mb-3 text-success">Ingresos</h4>
-            {transactions.length === 0 ? (
-              <div className="alert alert-info">No hay ingresos registrados.</div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-striped">
-                  <thead>
-                    <tr>
-                      <th>Monto</th>
-                      <th>Fecha</th>
-                      <th>Categoría</th>
-                      <th>Descripción</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.filter(tx => tx.type === 'income').map(tx => (
-                      <tr key={tx.id}>
-                        <td>{currencyData.symbol}{Number(tx.amount).toFixed(2)}</td>
-                        <td>{new Date(tx.date).toLocaleString()}</td>
-                        <td>{tx.category || 'Sin categoría'}</td>
-                        <td>{tx.description || '-'}</td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleDelete(tx.id)}
-                          >
-                            Eliminar
-                          </button>
-                        </td>
+          <div className="col-md-6">
+            <div 
+              className="card-custom"
+              style={{
+                padding: 'var(--spacing-lg)',
+                backgroundColor: 'var(--bg-primary)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-light)',
+                boxShadow: 'var(--shadow-sm)',
+                height: '100%'
+              }}
+            >
+              <h4 
+                className="mb-4"
+                style={{
+                  fontWeight: '600',
+                  color: 'var(--success)',
+                  fontSize: '1.25rem'
+                }}
+              >
+                <i className="bi bi-arrow-up-circle me-2"></i>
+                Ingresos
+              </h4>
+              {transactions.filter(tx => tx.type === 'income').length === 0 ? (
+                <div 
+                  className="text-center py-5"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--spacing-xl)'
+                  }}
+                >
+                  <i className="bi bi-inbox" style={{ fontSize: '3rem', color: 'var(--text-muted)' }}></i>
+                  <p className="mt-3 mb-0" style={{ color: 'var(--text-secondary)' }}>
+                    No hay ingresos registrados.
+                  </p>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table-custom mb-0">
+                    <thead>
+                      <tr>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {transactions.filter(tx => tx.type === 'income').map(tx => (
+                        <tr key={tx.id}>
+                          <td style={{ fontWeight: '600', color: 'var(--success)' }}>
+                            {currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            {new Date(tx.date).toLocaleString()}
+                          </td>
+                          <td style={{ color: 'var(--text-primary)' }}>
+                            {tx.category || 'Sin categoría'}
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            {tx.description || '-'}
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-sm"
+                              style={{
+                                padding: '0.25rem 0.75rem',
+                                fontSize: '0.75rem',
+                                fontWeight: '500',
+                                border: '1px solid var(--danger)',
+                                backgroundColor: 'transparent',
+                                color: 'var(--danger)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                transition: 'all var(--transition-fast)'
+                              }}
+                              onClick={() => handleDelete(tx.id)}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = 'var(--danger-light)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              <i className="bi bi-trash me-1"></i>
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         </div>
     </>

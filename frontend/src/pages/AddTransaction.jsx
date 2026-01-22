@@ -114,15 +114,76 @@ export default function AddTransaction() {
   // --- Renderizado del formulario ---
   return (
     <div className="d-flex justify-content-center">
-      <div className="card shadow-sm p-4" style={{ maxWidth: 500, width: '100%' }}>
-        <h2 className="mb-4 text-center">Agregar transacción</h2>
-        {error && <div className="alert alert-danger">{error}</div>}
+      <div 
+        className="card-custom" 
+        style={{ 
+          maxWidth: 600, 
+          width: '100%',
+          padding: 'var(--spacing-xl)',
+          backgroundColor: 'var(--bg-primary)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-md)'
+        }}
+      >
+        <div className="mb-4">
+          <h2 
+            className="mb-1" 
+            style={{ 
+              fontWeight: '700', 
+              color: 'var(--text-primary)',
+              fontSize: '1.75rem'
+            }}
+          >
+            <i className="bi bi-plus-circle me-2" style={{ color: 'var(--primary)' }}></i>
+            Agregar transacción
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: 0 }}>
+            Registra un nuevo ingreso o gasto
+          </p>
+        </div>
+
+        {error && (
+          <div 
+            className="alert alert-danger" 
+            style={{
+              backgroundColor: 'var(--danger-light)',
+              border: '1px solid var(--danger)',
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--danger)',
+              marginBottom: 'var(--spacing-lg)'
+            }}
+          >
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           {/* Tipo de transacción */}
           <div className="mb-3">
-            <label className="form-label">Tipo</label>
+            <label 
+              className="form-label" 
+              style={{ 
+                fontWeight: '600', 
+                color: 'var(--text-primary)', 
+                fontSize: '0.875rem',
+                marginBottom: 'var(--spacing-xs)'
+              }}
+            >
+              Tipo de transacción
+            </label>
             <select
               className="form-select"
+              style={{
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-sm) var(--spacing-md)',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                fontSize: '0.95rem',
+                transition: 'all var(--transition-fast)'
+              }}
               value={type}
               onChange={e => setType(e.target.value)}
             >
@@ -133,32 +194,82 @@ export default function AddTransaction() {
 
           {/* Monto */}
           <div className="mb-3">
-            <label className="form-label">Monto</label>
+            <label 
+              className="form-label" 
+              style={{ 
+                fontWeight: '600', 
+                color: 'var(--text-primary)', 
+                fontSize: '0.875rem',
+                marginBottom: 'var(--spacing-xs)'
+              }}
+            >
+              Monto <span style={{ color: 'var(--danger)' }}>*</span>
+            </label>
             <input
               type="number"
               className="form-control"
+              style={{
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-sm) var(--spacing-md)',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                fontSize: '0.95rem',
+                transition: 'all var(--transition-fast)'
+              }}
               value={amount}
               min="0"
               step="0.01"
               required
               onChange={e => setAmount(e.target.value)}
+              placeholder="0.00"
             />
           </div>
 
           {/* Fecha y Hora */}
           <div className="row">
             <div className="col mb-3">
-              <label className="form-label">Fecha</label>
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                <i className="bi bi-calendar3 me-1"></i>
+                Fecha
+              </label>
               <DatePicker
                 selected={date}
                 onChange={date => setDate(date)}
                 className="form-control"
                 dateFormat="yyyy-MM-dd"
                 maxDate={new Date()}
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem'
+                }}
               />
             </div>
             <div className="col mb-3">
-              <label className="form-label">Hora</label>
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                <i className="bi bi-clock me-1"></i>
+                Hora
+              </label>
               <DatePicker
                 selected={date}
                 onChange={date => {
@@ -179,15 +290,43 @@ export default function AddTransaction() {
                 dateFormat="HH:mm"
                 className="form-control"
                 value={time}
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem'
+                }}
               />
             </div>
           </div>
 
           {/* Categoría */}
           <div className="mb-3">
-            <label className="form-label">Categoría</label>
+            <label 
+              className="form-label" 
+              style={{ 
+                fontWeight: '600', 
+                color: 'var(--text-primary)', 
+                fontSize: '0.875rem',
+                marginBottom: 'var(--spacing-xs)'
+              }}
+            >
+              <i className="bi bi-tag me-1"></i>
+              Categoría
+            </label>
             <select
               className="form-select"
+              style={{
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-sm) var(--spacing-md)',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                fontSize: '0.95rem',
+                transition: 'all var(--transition-fast)'
+              }}
               value={categoryId}
               onChange={e => setCategoryId(e.target.value)}
             >
@@ -215,7 +354,18 @@ export default function AddTransaction() {
           {type === 'expense' && (
             <>
               <div className="mb-3">
-                <label className="form-label">Emociones</label>
+                <label 
+                  className="form-label" 
+                  style={{ 
+                    fontWeight: '600', 
+                    color: 'var(--text-primary)', 
+                    fontSize: '0.875rem',
+                    marginBottom: 'var(--spacing-xs)'
+                  }}
+                >
+                  <i className="bi bi-emoji-smile me-1"></i>
+                  Emociones asociadas
+                </label>
                 <Select
                   isMulti
                   options={groupedOptions}
@@ -224,13 +374,55 @@ export default function AddTransaction() {
                   className="basic-multi-select"
                   classNamePrefix="select"
                   placeholder="Seleccioná emociones..."
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      border: '1px solid var(--border-light)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '2px',
+                      backgroundColor: 'var(--bg-secondary)',
+                      boxShadow: 'none',
+                      '&:hover': {
+                        borderColor: 'var(--primary)'
+                      }
+                    }),
+                    menu: (base) => ({
+                      ...base,
+                      borderRadius: 'var(--radius-md)',
+                      boxShadow: 'var(--shadow-md)',
+                      border: '1px solid var(--border-light)'
+                    })
+                  }}
                 />
+                <small style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                  Opcional: ¿Cómo te sentiste al hacer este gasto?
+                </small>
               </div>
               <div className="mb-3">
-                <label className="form-label">Motivo</label>
+                <label 
+                  className="form-label" 
+                  style={{ 
+                    fontWeight: '600', 
+                    color: 'var(--text-primary)', 
+                    fontSize: '0.875rem',
+                    marginBottom: 'var(--spacing-xs)'
+                  }}
+                >
+                  <i className="bi bi-geo-alt me-1"></i>
+                  Motivo / Destino
+                </label>
                 <input
                   type="text"
                   className="form-control"
+                  style={{
+                    border: '1px solid var(--border-light)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--spacing-sm) var(--spacing-md)',
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.95rem',
+                    transition: 'all var(--transition-fast)'
+                  }}
                   placeholder="Ej: Cafetería, Supermercado..."
                   value={destination}
                   onChange={e => setDestination(e.target.value)}
@@ -242,10 +434,30 @@ export default function AddTransaction() {
           {/* Campo específico para ingresos */}
           {type === 'income' && (
             <div className="mb-3">
-              <label className="form-label">Fuente</label>
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                <i className="bi bi-wallet2 me-1"></i>
+                Fuente del ingreso
+              </label>
               <input
                 type="text"
                 className="form-control"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem',
+                  transition: 'all var(--transition-fast)'
+                }}
                 placeholder="Ej: Nómina, Freelance..."
                 value={source}
                 onChange={e => setSource(e.target.value)}
@@ -253,8 +465,34 @@ export default function AddTransaction() {
             </div>
           )}
 
-          <button type="submit" className="btn btn-primary w-100 mt-3">
-            Guardar
+          <button 
+            type="submit" 
+            className="btn w-100 mt-4"
+            style={{
+              backgroundColor: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--spacing-md) var(--spacing-lg)',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = 'var(--primary-dark)';
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = 'var(--shadow-md)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'var(--primary)';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = 'var(--shadow-sm)';
+            }}
+          >
+            <i className="bi bi-check-circle me-2"></i>
+            Guardar transacción
           </button>
         </form>
       </div>

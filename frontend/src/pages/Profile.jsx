@@ -8,11 +8,13 @@ export default function Profile() {
   const [form, setForm] = useState({});              // Datos del formulario de edición
   const [error, setError] = useState(null);          // Mensaje de error
   const [message, setMessage] = useState(null);      // Mensaje de éxito
+  const [loading, setLoading] = useState(true);      // Estado de carga
   const navigate = useNavigate();                    // Para redireccionar
 
   // --- Cargar perfil al montar el componente ---
   useEffect(() => {
     const token = localStorage.getItem('token');
+    setLoading(true);
     fetch('http://localhost:3001/api/profile', {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -24,7 +26,11 @@ export default function Profile() {
           fullName: data.fullName,
           country: data.country
         }); // Inicializa el formulario con los datos actuales
-      });
+      })
+      .catch(() => {
+        setError('Error al cargar el perfil');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // --- Maneja cambios en los campos del formulario ---
@@ -58,76 +64,212 @@ export default function Profile() {
   };
 
   // --- Si aún no se cargó el perfil, muestra pantalla de carga ---
-  if (!profile) return <div className="text-center mt-5">Cargando perfil…</div>;
+  if (loading) {
+    return (
+      <div className="text-center" style={{ padding: 'var(--spacing-2xl)' }}>
+        <div 
+          className="spinner-border" 
+          style={{ 
+            width: '3rem', 
+            height: '3rem',
+            color: 'var(--primary)'
+          }} 
+          role="status"
+        >
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+        <p style={{ marginTop: 'var(--spacing-md)', color: 'var(--text-secondary)' }}>
+          Cargando perfil...
+        </p>
+      </div>
+    );
+  }
 
   // --- Render principal ---
   return (
-    <>
-        <div className="d-flex justify-content-center">
-          <div className="card shadow-sm" style={{ maxWidth: 500, width: '100%' }}>
-            <div className="card-body">
-              <h2 className="mb-4 text-center">Mi Perfil</h2>
-              {error && <div className="alert alert-danger">{error}</div>}
-              {message && <div className="alert alert-success">{message}</div>}
-              {/* Si no está en modo edición, muestra los datos */}
-              {!edit ? (
-                <>
-                  <div className="mb-3"><b>Email:</b> {profile.email}</div>
-                  <div className="mb-3"><b>Usuario:</b> {profile.username}</div>
-                  <div className="mb-3"><b>Nombre completo:</b> {profile.fullName}</div>
-                  <div className="mb-3"><b>País:</b> {profile.country}</div>
-                  <button className="btn btn-primary w-100" onClick={() => setEdit(true)}>
-                    Editar datos
-                  </button>
-                </>
-              ) : (
-                // Si está en modo edición, muestra el formulario
-                <form onSubmit={handleSave}>
-                  <div className="mb-3">
-                    <label className="form-label">Usuario</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="username"
-                      value={form.username}
-                      onChange={handleChange}
-                      required
-                    />
+    <div className="container-fluid" style={{ padding: 'var(--spacing-lg)' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 'var(--spacing-xl)' }}>
+        <h2 
+          style={{ 
+            fontWeight: '700', 
+            color: 'var(--text-primary)',
+            marginBottom: 'var(--spacing-xs)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-sm)'
+          }}
+        >
+          <i className="bi bi-person-circle" style={{ color: 'var(--primary)' }}></i>
+          Mi Perfil
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 0 }}>
+          Gestiona tu información personal y configuración de cuenta
+        </p>
+      </div>
+
+      {/* Mensajes de alerta */}
+      {error && (
+        <div 
+          className="alert alert-danger"
+          style={{
+            borderRadius: 'var(--radius-md)',
+            marginBottom: 'var(--spacing-lg)',
+            border: '1px solid var(--danger)',
+            backgroundColor: 'var(--danger-light)'
+          }}
+          role="alert"
+        >
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          {error}
+        </div>
+      )}
+      {message && (
+        <div 
+          className="alert alert-success"
+          style={{
+            borderRadius: 'var(--radius-md)',
+            marginBottom: 'var(--spacing-lg)',
+            border: '1px solid var(--success)',
+            backgroundColor: 'var(--success-light)'
+          }}
+          role="alert"
+        >
+          <i className="bi bi-check-circle me-2"></i>
+          {message}
+        </div>
+      )}
+
+      {/* Card principal */}
+      <div className="d-flex justify-content-center">
+        <div 
+          className="card"
+          style={{
+            maxWidth: '600px',
+            width: '100%',
+            border: '1px solid var(--border-light)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-md)'
+          }}
+        >
+          <div className="card-body" style={{ padding: 'var(--spacing-xl)' }}>
+            {/* Modo visualización */}
+            {!edit ? (
+              <>
+                {/* Información del perfil */}
+                <div style={{ marginBottom: 'var(--spacing-xl)' }}>
+                  <div 
+                    style={{
+                      padding: 'var(--spacing-lg)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      borderRadius: 'var(--radius-md)',
+                      marginBottom: 'var(--spacing-md)'
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                      <i className="bi bi-envelope me-1"></i>
+                      Email
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {profile.email}
+                    </div>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">Nombre completo</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="fullName"
-                      value={form.fullName}
-                      onChange={handleChange}
-                      required
-                    />
+
+                  <div 
+                    style={{
+                      padding: 'var(--spacing-lg)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      borderRadius: 'var(--radius-md)',
+                      marginBottom: 'var(--spacing-md)'
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                      <i className="bi bi-person me-1"></i>
+                      Usuario
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {profile.username}
+                    </div>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">País</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="country"
-                      value={form.country}
-                      onChange={handleChange}
-                      required
-                    />
+
+                  <div 
+                    style={{
+                      padding: 'var(--spacing-lg)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      borderRadius: 'var(--radius-md)',
+                      marginBottom: 'var(--spacing-md)'
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                      <i className="bi bi-person-badge me-1"></i>
+                      Nombre Completo
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {profile.fullName}
+                    </div>
                   </div>
-                  <button type="submit" className="btn btn-success w-100">
-                    Guardar cambios
-                  </button>
-                  <button type="button" className="btn btn-link w-100 mt-2" onClick={() => setEdit(false)}>
-                    Cancelar
-                  </button>
-                </form>
-              )}
-              {/* Botón para eliminar cuenta (solo si no está editando) */}
-              {!edit && (
+
+                  <div 
+                    style={{
+                      padding: 'var(--spacing-lg)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      borderRadius: 'var(--radius-md)'
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                      <i className="bi bi-geo-alt me-1"></i>
+                      País
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {profile.country}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botones de acción */}
+                <button 
+                  className="btn w-100"
+                  style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--spacing-sm) var(--spacing-lg)',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                    marginBottom: 'var(--spacing-md)'
+                  }}
+                  onClick={() => setEdit(true)}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'var(--primary-dark)';
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = 'var(--shadow-md)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'var(--primary)';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  <i className="bi bi-pencil me-2"></i>
+                  Editar Datos
+                </button>
+
                 <button
-                  className="btn btn-outline-danger w-100 mt-3"
+                  className="btn w-100"
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: 'var(--danger)',
+                    border: '1px solid var(--danger)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--spacing-sm) var(--spacing-lg)',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)'
+                  }}
                   onClick={async () => {
                     if (!window.confirm('¿Estás seguro de eliminar tu cuenta? Esta acción es irreversible.')) {
                       return;
@@ -146,16 +288,188 @@ export default function Profile() {
                       localStorage.removeItem('token');
                       navigate('/register', { replace: true });
                     } catch (e) {
-                      alert(e.message);
+                      setError(e.message);
                     }
                   }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'var(--danger)';
+                    e.target.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = 'var(--danger)';
+                  }}
                 >
-                  Eliminar cuenta
+                  <i className="bi bi-trash me-2"></i>
+                  Eliminar Cuenta
                 </button>
+              </>
+            ) : (
+                // Si está en modo edición, muestra el formulario
+                <form onSubmit={handleSave}>
+                  <h5 
+                    style={{ 
+                      fontWeight: '600', 
+                      color: 'var(--text-primary)',
+                      marginBottom: 'var(--spacing-lg)',
+                      fontSize: '1.1rem'
+                    }}
+                  >
+                    <i className="bi bi-pencil-square me-2" style={{ color: 'var(--primary)' }}></i>
+                    Editar Información
+                  </h5>
+
+                  <div className="mb-3">
+                    <label 
+                      className="form-label" 
+                      style={{ 
+                        fontWeight: '600', 
+                        color: 'var(--text-primary)', 
+                        fontSize: '0.875rem',
+                        marginBottom: 'var(--spacing-xs)'
+                      }}
+                    >
+                      <i className="bi bi-person me-1"></i>
+                      Usuario <span style={{ color: 'var(--danger)' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      style={{
+                        border: '1px solid var(--border-light)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: 'var(--spacing-sm) var(--spacing-md)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.95rem',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                      name="username"
+                      value={form.username}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label 
+                      className="form-label" 
+                      style={{ 
+                        fontWeight: '600', 
+                        color: 'var(--text-primary)', 
+                        fontSize: '0.875rem',
+                        marginBottom: 'var(--spacing-xs)'
+                      }}
+                    >
+                      <i className="bi bi-person-badge me-1"></i>
+                      Nombre Completo <span style={{ color: 'var(--danger)' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      style={{
+                        border: '1px solid var(--border-light)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: 'var(--spacing-sm) var(--spacing-md)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.95rem',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                      name="fullName"
+                      value={form.fullName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label 
+                      className="form-label" 
+                      style={{ 
+                        fontWeight: '600', 
+                        color: 'var(--text-primary)', 
+                        fontSize: '0.875rem',
+                        marginBottom: 'var(--spacing-xs)'
+                      }}
+                    >
+                      <i className="bi bi-geo-alt me-1"></i>
+                      País <span style={{ color: 'var(--danger)' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      style={{
+                        border: '1px solid var(--border-light)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: 'var(--spacing-sm) var(--spacing-md)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.95rem',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                      name="country"
+                      value={form.country}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="btn w-100"
+                    style={{
+                      backgroundColor: 'var(--success)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 'var(--radius-md)',
+                      padding: 'var(--spacing-sm) var(--spacing-lg)',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all var(--transition-fast)',
+                      marginBottom: 'var(--spacing-sm)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = 'var(--success-dark)';
+                      e.target.style.transform = 'translateY(-1px)';
+                      e.target.style.boxShadow = 'var(--shadow-md)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = 'var(--success)';
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    <i className="bi bi-check-circle me-2"></i>
+                    Guardar Cambios
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn w-100"
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: 'var(--text-secondary)',
+                      border: 'none',
+                      padding: 'var(--spacing-sm) var(--spacing-lg)',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      textDecoration: 'underline'
+                    }}
+                    onClick={() => {
+                      setEdit(false);
+                      setForm({
+                        username: profile.username,
+                        fullName: profile.fullName,
+                        country: profile.country
+                      });
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </form>
               )}
-            </div>
           </div>
         </div>
-    </>
+      </div>
+    </div>
   );
 }

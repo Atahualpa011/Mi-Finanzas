@@ -123,116 +123,338 @@ export default function GroupDetail() {
     navigate('/groups');
   };
 
-  // --- Botón de acción (eliminar o salir) ---
-  let actionButton = null;
-  if (!loading) {
-    if (createdBy == myUserId) {
-      actionButton = (
-        <button className="btn btn-danger" style={{ position: 'absolute', top: 24, right: 32 }} onClick={handleDeleteGroup}>
-          Eliminar grupo
-        </button>
-      );
-    } else if (members.some(m => m.user_id == myUserId)) {
-      actionButton = (
-        <button className="btn btn-warning" style={{ position: 'absolute', top: 24, right: 32 }} onClick={handleLeaveGroup}>
-          Salir del grupo
-        </button>
-      );
-    }
+  // --- Loading state ---
+  if (loading) {
+    return (
+      <div className="text-center" style={{ padding: 'var(--spacing-2xl)' }}>
+        <div 
+          className="spinner-border" 
+          style={{ 
+            width: '3rem', 
+            height: '3rem',
+            color: 'var(--primary)'
+          }} 
+          role="status"
+        >
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+        <p style={{ marginTop: 'var(--spacing-md)', color: 'var(--text-secondary)' }}>
+          Cargando grupo...
+        </p>
+      </div>
+    );
   }
 
   // --- Render principal ---
   return (
-    <div style={{ position: 'relative' }}>
-      {actionButton}
-      <button
-        className="btn btn-secondary mb-3"
-        onClick={() => navigate('/groups')}
+    <div className="container-fluid" style={{ padding: 'var(--spacing-lg)' }}>
+      {/* Header con botón volver y acción */}
+      <div 
+        style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: 'var(--spacing-xl)'
+        }}
       >
-        ← Volver
-      </button>
+        <button
+          className="btn"
+          style={{
+            backgroundColor: 'transparent',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border-light)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--spacing-xs) var(--spacing-md)',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all var(--transition-fast)'
+          }}
+          onClick={() => navigate('/groups')}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = 'var(--bg-secondary)';
+            e.target.style.borderColor = 'var(--primary)';
+            e.target.style.color = 'var(--primary)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'transparent';
+            e.target.style.borderColor = 'var(--border-light)';
+            e.target.style.color = 'var(--text-secondary)';
+          }}
+        >
+          <i className="bi bi-arrow-left me-2"></i>
+          Volver a Grupos
+        </button>
+
+        {/* Botón de acción (eliminar o salir) */}
+        {createdBy == myUserId ? (
+          <button
+            className="btn"
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--danger)',
+              border: '1px solid var(--danger)',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--spacing-xs) var(--spacing-lg)',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)'
+            }}
+            onClick={handleDeleteGroup}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = 'var(--danger)';
+              e.target.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = 'var(--danger)';
+            }}
+          >
+            <i className="bi bi-trash me-2"></i>
+            Eliminar Grupo
+          </button>
+        ) : members.some(m => m.user_id == myUserId) ? (
+          <button
+            className="btn"
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--warning)',
+              border: '1px solid var(--warning)',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--spacing-xs) var(--spacing-lg)',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)'
+            }}
+            onClick={handleLeaveGroup}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = 'var(--warning)';
+              e.target.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = 'var(--warning)';
+            }}
+          >
+            <i className="bi bi-box-arrow-right me-2"></i>
+            Salir del Grupo
+          </button>
+        ) : null}
+      </div>
       
       {/* Información del grupo */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <h2 className="card-title">{groupInfo?.name || 'Cargando...'}</h2>
-          {groupInfo?.description && (
-            <p className="text-muted mb-2">{groupInfo.description}</p>
-          )}
-          {groupInfo?.created_at && (
-            <p className="text-muted mb-3">
-              <small>
+      <div 
+        className="card"
+        style={{
+          border: '1px solid var(--border-light)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-md)',
+          marginBottom: 'var(--spacing-xl)'
+        }}
+      >
+        <div className="card-body" style={{ padding: 'var(--spacing-xl)' }}>
+          {/* Título y descripción */}
+          <div style={{ marginBottom: 'var(--spacing-xl)' }}>
+            <h2 
+              style={{ 
+                fontWeight: '700', 
+                color: 'var(--text-primary)',
+                marginBottom: 'var(--spacing-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--spacing-sm)'
+              }}
+            >
+              <i className="bi bi-people-fill" style={{ color: 'var(--primary)' }}></i>
+              {groupInfo?.name || 'Cargando...'}
+            </h2>
+            {groupInfo?.description && (
+              <p 
+                style={{ 
+                  color: 'var(--text-secondary)', 
+                  marginBottom: 'var(--spacing-xs)',
+                  fontSize: '1rem'
+                }}
+              >
+                {groupInfo.description}
+              </p>
+            )}
+            {groupInfo?.created_at && (
+              <p 
+                style={{ 
+                  color: 'var(--text-secondary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 0
+                }}
+              >
+                <i className="bi bi-calendar3 me-2"></i>
                 Creado el {new Date(groupInfo.created_at).toLocaleDateString('es-AR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
                 })}
-              </small>
-            </p>
-          )}
+              </p>
+            )}
+          </div>
 
           {/* Estadísticas del grupo */}
           {groupStats && (
             <>
-              <hr />
-              <h5 className="mb-3">Estadísticas del grupo</h5>
-              <div className="row g-3">
-                <div className="col-md-3 col-6">
-                  <div className="text-center p-2 border rounded">
-                    <h6 className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>Total movimientos</h6>
-                    <h4 className="mb-0 text-primary">{groupStats.totalMovimientos}</h4>
+              <div 
+                style={{
+                  borderTop: '1px solid var(--border-light)',
+                  paddingTop: 'var(--spacing-lg)',
+                  marginBottom: 'var(--spacing-lg)'
+                }}
+              >
+                <h5 
+                  style={{ 
+                    fontWeight: '600', 
+                    color: 'var(--text-primary)',
+                    marginBottom: 'var(--spacing-lg)',
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  <i className="bi bi-graph-up me-2" style={{ color: 'var(--primary)' }}></i>
+                  Estadísticas del Grupo
+                </h5>
+                
+                <div className="row g-3">
+                  <div className="col-md-3 col-6">
+                    <div 
+                      style={{
+                        textAlign: 'center',
+                        padding: 'var(--spacing-lg)',
+                        backgroundColor: 'var(--primary-light)',
+                        border: '1px solid var(--primary)',
+                        borderRadius: 'var(--radius-md)'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.75rem', color: 'var(--primary)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                        <i className="bi bi-list-ul me-1"></i>
+                        Total Movimientos
+                      </div>
+                      <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>
+                        {groupStats.totalMovimientos}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 col-6">
+                    <div 
+                      style={{
+                        textAlign: 'center',
+                        padding: 'var(--spacing-lg)',
+                        backgroundColor: 'var(--danger-light)',
+                        border: '1px solid var(--danger)',
+                        borderRadius: 'var(--radius-md)'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.75rem', color: 'var(--danger)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                        <i className="bi bi-cart me-1"></i>
+                        Gastos
+                      </div>
+                      <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--danger)' }}>
+                        {groupStats.cantidadGastos}
+                      </div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: 'var(--spacing-xs)' }}>
+                        ${groupStats.totalGastos.toLocaleString('es-AR')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 col-6">
+                    <div 
+                      style={{
+                        textAlign: 'center',
+                        padding: 'var(--spacing-lg)',
+                        backgroundColor: 'var(--success-light)',
+                        border: '1px solid var(--success)',
+                        borderRadius: 'var(--radius-md)'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.75rem', color: 'var(--success)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                        <i className="bi bi-cash-coin me-1"></i>
+                        Pagos
+                      </div>
+                      <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--success)' }}>
+                        {groupStats.cantidadPagos}
+                      </div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: 'var(--spacing-xs)' }}>
+                        ${groupStats.totalPagos.toLocaleString('es-AR')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 col-6">
+                    <div 
+                      style={{
+                        textAlign: 'center',
+                        padding: 'var(--spacing-lg)',
+                        backgroundColor: 'var(--info-light)',
+                        border: '1px solid var(--info)',
+                        borderRadius: 'var(--radius-md)'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.75rem', color: 'var(--info)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                        <i className="bi bi-people me-1"></i>
+                        Miembros
+                      </div>
+                      <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--info)' }}>
+                        {members.length}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="col-md-3 col-6">
-                  <div className="text-center p-2 border rounded">
-                    <h6 className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>Gastos</h6>
-                    <h4 className="mb-0 text-danger">{groupStats.cantidadGastos}</h4>
-                    <small className="text-muted">${groupStats.totalGastos.toLocaleString('es-AR')}</small>
-                  </div>
-                </div>
-                <div className="col-md-3 col-6">
-                  <div className="text-center p-2 border rounded">
-                    <h6 className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>Pagos</h6>
-                    <h4 className="mb-0 text-success">{groupStats.cantidadPagos}</h4>
-                    <small className="text-muted">${groupStats.totalPagos.toLocaleString('es-AR')}</small>
-                  </div>
-                </div>
-                <div className="col-md-3 col-6">
-                  <div className="text-center p-2 border rounded">
-                    <h6 className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>Miembros</h6>
-                    <h4 className="mb-0 text-info">{members.length}</h4>
-                  </div>
-                </div>
-              </div>
 
-              {/* Estadísticas adicionales */}
-              <div className="row g-2 mt-2">
-                {groupStats.miembroMayorGasto && (
-                  <div className="col-md-6">
-                    <div className="alert alert-warning mb-0 py-2">
-                      <small>
-                        <strong>🏆 Mayor gastador:</strong> {groupStats.miembroMayorGasto.nombre} 
-                        <br />
-                        <span className="text-muted">
+                {/* Estadísticas adicionales */}
+                <div className="row g-3 mt-3">
+                  {groupStats.miembroMayorGasto && (
+                    <div className="col-md-6">
+                      <div 
+                        style={{
+                          padding: 'var(--spacing-md)',
+                          backgroundColor: 'var(--warning-light)',
+                          border: '1px solid var(--warning)',
+                          borderRadius: 'var(--radius-md)'
+                        }}
+                      >
+                        <div style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: 'var(--spacing-xs)' }}>
+                          <i className="bi bi-trophy-fill me-2" style={{ color: 'var(--warning)' }}></i>
+                          Mayor Gastador
+                        </div>
+                        <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                          {groupStats.miembroMayorGasto.nombre}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                           ${groupStats.miembroMayorGasto.monto.toLocaleString('es-AR')} en gastos
-                        </span>
-                      </small>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
-                {groupStats.miembroMayorSaldo && Math.abs(groupStats.miembroMayorSaldo.saldo) > 0 && (
-                  <div className="col-md-6">
-                    <div className={`alert ${groupStats.miembroMayorSaldo.saldo > 0 ? 'alert-success' : 'alert-danger'} mb-0 py-2`}>
-                      <small>
-                        <strong>💰 Mayor saldo:</strong> {groupStats.miembroMayorSaldo.name}
-                        <br />
-                        <span className="text-muted">
+                  )}
+                  {groupStats.miembroMayorSaldo && Math.abs(groupStats.miembroMayorSaldo.saldo) > 0 && (
+                    <div className="col-md-6">
+                      <div 
+                        style={{
+                          padding: 'var(--spacing-md)',
+                          backgroundColor: groupStats.miembroMayorSaldo.saldo > 0 ? 'var(--success-light)' : 'var(--danger-light)',
+                          border: `1px solid ${groupStats.miembroMayorSaldo.saldo > 0 ? 'var(--success)' : 'var(--danger)'}`,
+                          borderRadius: 'var(--radius-md)'
+                        }}
+                      >
+                        <div style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: 'var(--spacing-xs)' }}>
+                          <i className="bi bi-cash-stack me-2" style={{ color: groupStats.miembroMayorSaldo.saldo > 0 ? 'var(--success)' : 'var(--danger)' }}></i>
+                          Mayor Saldo
+                        </div>
+                        <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                          {groupStats.miembroMayorSaldo.name}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                           {groupStats.miembroMayorSaldo.saldo > 0 ? 'A cobrar' : 'Debe'} ${Math.abs(groupStats.miembroMayorSaldo.saldo).toLocaleString('es-AR')}
-                        </span>
-                      </small>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </>
           )}

@@ -139,7 +139,7 @@ export default function GroupBudgets({ groupId }) {
   return (
     <div className="card mb-4">
       <div className="card-header d-flex justify-content-between align-items-center">
-        <h5 className="mb-0">💰 Presupuestos del Grupo</h5>
+        <h5 className="mb-0">Presupuestos del Grupo</h5>
         <button className="btn btn-sm btn-primary" onClick={() => { resetForm(); setShowModal(true); }}>
           + Nuevo
         </button>

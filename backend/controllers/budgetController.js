@@ -73,13 +73,17 @@ async function createBudget(req, res) {
       return res.status(400).json({ error: 'El umbral de alerta debe estar entre 1 y 100' });
     }
     
+    // Formatear fechas a YYYY-MM-DD
+    const formattedStartDate = startDate.split('T')[0];
+    const formattedEndDate = endDate ? endDate.split('T')[0] : null;
+    
     const budgetId = await budgetModel.createBudget(
       userId,
       categoryId,
       amount,
       period,
-      startDate,
-      endDate || null,
+      formattedStartDate,
+      formattedEndDate,
       alertThreshold || 80
     );
     
@@ -125,6 +129,14 @@ async function updateBudget(req, res) {
     
     if (updates.alertThreshold && (updates.alertThreshold < 1 || updates.alertThreshold > 100)) {
       return res.status(400).json({ error: 'El umbral de alerta debe estar entre 1 y 100' });
+    }
+    
+    // Formatear fechas a YYYY-MM-DD si existen
+    if (updates.startDate) {
+      updates.startDate = updates.startDate.split('T')[0];
+    }
+    if (updates.endDate) {
+      updates.endDate = updates.endDate.split('T')[0];
     }
     
     const success = await budgetModel.updateBudget(budgetId, userId, updates);
