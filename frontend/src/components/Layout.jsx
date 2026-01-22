@@ -4,20 +4,22 @@ export default function Layout({ children, withSidebar = true }) {
     <div
       style={{
         minHeight: "100vh",
-        background: "#3c4046ff",
-        marginLeft: withSidebar ? 220 : 0, // Deja espacio para el sidebar si está activo
-        transition: "margin 0.2s",
+        background: "var(--bg-secondary)",
+        marginLeft: withSidebar ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed-width)',
+        marginTop: 'var(--navbar-height)',
+        transition: "margin var(--transition-base)",
+        paddingTop: 'var(--spacing-lg)'
       }}
     >
       <div
         style={{
           maxWidth: 1500,
           margin: "0 auto",
-          padding: "32px 24px",
-          background: "#fff",
-          borderRadius: 16,
+          padding: "var(--spacing-xl) var(--spacing-lg)",
+          background: "var(--bg-primary)",
+          borderRadius: 'var(--radius-lg)',
           minHeight: "80vh",
-          boxShadow: "0 2px 12px rgba(0, 0, 0, 0)",
+          boxShadow: "var(--shadow-sm)",
           boxSizing: "border-box",
         }}
       >

@@ -256,41 +256,107 @@ export default function Dashboard() {
   return (
     <div>
       {/* Encabezado con saludo y saldo */}
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <h1 className="h3 mb-2 mb-md-0">¡Hola, {profile.username}!</h1>
-        <div className="fs-4 fw-bold">
-          Saldo actual: <span className={totalIncome - totalExpense >= 0 ? 'text-success' : 'text-danger'}>
-            {currencyData.symbol}{(totalIncome - totalExpense).toFixed(2)}
-          </span>
+      <div 
+        className="d-flex justify-content-between align-items-center mb-4 flex-wrap p-4"
+        style={{
+          background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-md)',
+          color: 'white'
+        }}
+      >
+        <div>
+          <h1 className="h3 mb-1" style={{ fontWeight: '700' }}>
+            ¡Hola, {profile.username}!
+          </h1>
+          <p className="mb-0" style={{ opacity: 0.9, fontSize: '0.95rem' }}>
+            Bienvenido a tu panel financiero
+          </p>
+        </div>
+        <div className="text-end">
+          <p className="mb-1" style={{ fontSize: '0.875rem', opacity: 0.9 }}>
+            Saldo actual
+          </p>
+          <div className="fs-3 fw-bold">
+            <span style={{ 
+              color: totalIncome - totalExpense >= 0 ? 'var(--success-light)' : '#ffebee',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+              {currencyData.symbol}{(totalIncome - totalExpense).toFixed(2)}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Gráfico de línea: evolución del saldo */}
-      <div className="mb-4">
-        <div className="mb-3 d-flex align-items-center flex-wrap">
-          <label className="me-2 mb-0">Agrupar por:</label>
-          <select
-            className="form-select w-auto me-3"
-            value={groupBy}
-            onChange={e => setGroupBy(e.target.value)}
-          >
-            <option value="day">Día</option>
-            <option value="month">Mes</option>
-            <option value="year">Año</option>
-          </select>
-          <label className="me-2 mb-0">Filtrar año:</label>
-          <select
-            className="form-select w-auto"
-            value={selectedYear}
-            onChange={e => setSelectedYear(e.target.value)}
-          >
-            <option value="all">Todos</option>
-            {yearOptions.map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+      <div 
+        className="card-custom mb-4"
+        style={{
+          padding: 'var(--spacing-lg)',
+          backgroundColor: 'var(--bg-primary)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-sm)'
+        }}
+      >
+        <h5 className="mb-3" style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+          Evolución de tu saldo
+        </h5>
+        <div className="mb-3 d-flex align-items-center flex-wrap gap-3">
+          <div className="d-flex align-items-center gap-2">
+            <label className="mb-0" style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
+              Agrupar por:
+            </label>
+            <select
+              className="form-select form-select-sm"
+              style={{
+                width: 'auto',
+                minWidth: '100px',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.875rem',
+                padding: '0.375rem 0.75rem',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)'
+              }}
+              value={groupBy}
+              onChange={e => setGroupBy(e.target.value)}
+            >
+              <option value="day">Día</option>
+              <option value="month">Mes</option>
+              <option value="year">Año</option>
+            </select>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <label className="mb-0" style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
+              Filtrar año:
+            </label>
+            <select
+              className="form-select form-select-sm"
+              style={{
+                width: 'auto',
+                minWidth: '100px',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.875rem',
+                padding: '0.375rem 0.75rem',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)'
+              }}
+              value={selectedYear}
+              onChange={e => setSelectedYear(e.target.value)}
+            >
+              <option value="all">Todos</option>
+              {yearOptions.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <h5 className="mb-3">Evolución de tu saldo</h5>
         <Line
           data={getLineChartData(filteredTransactions, groupBy, currencyData.symbol)}
           options={lineOptions}
@@ -299,49 +365,91 @@ export default function Dashboard() {
       </div>
 
       {/* Selector de tipo de gráfico para categorías */}
-      <div className="mb-3 d-flex align-items-center flex-wrap">
-        <label className="me-2 mb-0">Ver gráfico como:</label>
-        <select
-          className="form-select w-auto"
-          value={chartType}
-          onChange={e => setChartType(e.target.value)}
-        >
-          <option value="pie">Torta</option>
-          <option value="bar">Barras</option>
-        </select>
+      <div className="mb-4">
+        <div className="d-flex align-items-center gap-2">
+          <label className="mb-0" style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
+            Ver gráfico como:
+          </label>
+          <select
+            className="form-select form-select-sm"
+            style={{
+              width: 'auto',
+              minWidth: '110px',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.875rem',
+              padding: '0.375rem 0.75rem',
+              backgroundColor: 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)'
+            }}
+            value={chartType}
+            onChange={e => setChartType(e.target.value)}
+          >
+            <option value="pie">Torta</option>
+            <option value="bar">Barras</option>
+          </select>
+        </div>
       </div>
 
       {/* Gráficos de gastos e ingresos por categoría */}
       {(Object.keys(expenseByCategory).length > 0 || Object.keys(incomeByCategory).length > 0) && (
-        <div className="row mb-4 justify-content-center">
+        <div className="row mb-4 justify-content-center g-4">
           {/* Gastos */}
-          <div className="col-md-6 mb-4 mb-md-0">
+          <div className="col-md-6">
             {Object.keys(expenseByCategory).length > 0 && (
-              <div className="d-flex flex-column align-items-center">
-                <h5 className="mb-3 text-center w-100">Gastos</h5>
-                <div style={{ width: 300, height: 250, marginBottom: 10 }}>
-                  {chartType === 'pie'
-                    ? <Pie data={pieData} options={pieOptions} />
-                    : <Bar
-                        data={{
-                          labels: Object.keys(expenseByCategory),
-                          datasets: [{
-                            label: 'Gastos',
-                            data: Object.values(expenseByCategory),
-                            backgroundColor: '#dc3545'
-                          }]
-                      }}
-                      options={barOptions}
-                      height={250}
-                      width={300}
-                    />
-                  }
+              <div 
+                className="card-custom h-100"
+                style={{
+                  padding: 'var(--spacing-lg)',
+                  backgroundColor: 'var(--bg-primary)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border-light)',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <h5 className="mb-4 text-center" style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                  <i className="bi bi-arrow-down-circle me-2" style={{ color: 'var(--danger)' }}></i>
+                  Gastos por categoría
+                </h5>
+                <div className="d-flex justify-content-center mb-3">
+                  <div style={{ width: 300, height: 250 }}>
+                    {chartType === 'pie'
+                      ? <Pie data={pieData} options={pieOptions} />
+                      : <Bar
+                          data={{
+                            labels: Object.keys(expenseByCategory),
+                            datasets: [{
+                              label: 'Gastos',
+                              data: Object.values(expenseByCategory),
+                              backgroundColor: 'var(--danger)'
+                            }]
+                        }}
+                        options={barOptions}
+                        height={250}
+                        width={300}
+                      />
+                    }
+                  </div>
                 </div>
-                <ul className="list-group" style={{ minWidth: 220, maxWidth: 300, width: '100%' }}>
+                <ul className="list-group" style={{ maxWidth: 400, margin: '0 auto' }}>
                   {Object.entries(expenseByCategory).map(([cat, amt]) => (
-                    <li className="list-group-item d-flex justify-content-between align-items-center" key={cat}>
-                      <span>{cat}</span>
-                      <span className="fw-bold text-danger">{currencyData.symbol}{amt.toFixed(2)}</span>
+                    <li 
+                      className="list-group-item d-flex justify-content-between align-items-center"
+                      key={cat}
+                      style={{
+                        border: '1px solid var(--border-light)',
+                        borderRadius: 'var(--radius-md)',
+                        marginBottom: 'var(--spacing-xs)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                    >
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>{cat}</span>
+                      <span className="fw-bold" style={{ color: 'var(--danger)', fontSize: '0.875rem' }}>
+                        {currencyData.symbol}{amt.toFixed(2)}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -351,27 +459,53 @@ export default function Dashboard() {
           {/* Ingresos */}
           <div className="col-md-6">
             {Object.keys(incomeByCategory).length > 0 && (
-              <div className="d-flex flex-column align-items-center">
-                <h5 className="mb-3 text-center w-100">Ingresos</h5>
-                <div style={{ width: 220, height: 220, marginBottom: 10 }}>
-                  {chartType === 'pie'
-                    ? <Pie data={incomePieData} options={pieOptions} />
-                    : <Bar
-                        data={{
-                          labels: Object.keys(incomeByCategory),
-                          datasets: [{
-                            label: 'Ingresos',
-                            data: Object.values(incomeByCategory),
-                            backgroundColor: '#198754'
-                          }]
-                      }} options={barOptions} />
-                  }
+              <div 
+                className="card-custom h-100"
+                style={{
+                  padding: 'var(--spacing-lg)',
+                  backgroundColor: 'var(--bg-primary)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border-light)',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <h5 className="mb-4 text-center" style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                  <i className="bi bi-arrow-up-circle me-2" style={{ color: 'var(--success)' }}></i>
+                  Ingresos por categoría
+                </h5>
+                <div className="d-flex justify-content-center mb-3">
+                  <div style={{ width: 220, height: 220 }}>
+                    {chartType === 'pie'
+                      ? <Pie data={incomePieData} options={pieOptions} />
+                      : <Bar
+                          data={{
+                            labels: Object.keys(incomeByCategory),
+                            datasets: [{
+                              label: 'Ingresos',
+                              data: Object.values(incomeByCategory),
+                              backgroundColor: 'var(--success)'
+                            }]
+                        }} options={barOptions} />
+                    }
+                  </div>
                 </div>
-                <ul className="list-group" style={{ minWidth: 180, maxWidth: 250, width: '100%' }}>
+                <ul className="list-group" style={{ maxWidth: 400, margin: '0 auto' }}>
                   {Object.entries(incomeByCategory).map(([cat, amt]) => (
-                    <li className="list-group-item d-flex justify-content-between align-items-center" key={cat}>
-                      <span>{cat}</span>
-                      <span className="fw-bold text-success">{currencyData.symbol}{amt.toFixed(2)}</span>
+                    <li 
+                      className="list-group-item d-flex justify-content-between align-items-center"
+                      key={cat}
+                      style={{
+                        border: '1px solid var(--border-light)',
+                        borderRadius: 'var(--radius-md)',
+                        marginBottom: 'var(--spacing-xs)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                    >
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>{cat}</span>
+                      <span className="fw-bold" style={{ color: 'var(--success)', fontSize: '0.875rem' }}>
+                        {currencyData.symbol}{amt.toFixed(2)}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -382,97 +516,183 @@ export default function Dashboard() {
       )}
 
       {/* Filtros por año y mes para categorías */}
-      <div className="mb-3 d-flex align-items-center flex-wrap">
-        <label className="me-2 mb-0">Año:</label>
-        <select
-          className="form-select w-auto me-3"
-          value={categoryYear}
-          onChange={e => {
-            setCategoryYear(e.target.value);
-            setCategoryMonth('all'); // Reset mes al cambiar año
-          }}
-        >
-          <option value="all">Todos</option>
-          {allYears.map(y => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
-        <label className="me-2 mb-0">Mes:</label>
-        <select
-          className="form-select w-auto"
-          value={categoryMonth}
-          onChange={e => setCategoryMonth(e.target.value)}
-          disabled={categoryYear === 'all'}
-        >
-          <option value="all">Todos</option>
-          {monthsInYear.map(m => (
-            <option key={m} value={m}>{m.toString().padStart(2, '0')}</option>
-          ))}
-        </select>
+      <div className="mb-4">
+        <div className="d-flex align-items-center flex-wrap gap-3">
+          <div className="d-flex align-items-center gap-2">
+            <label className="mb-0" style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
+              Año:
+            </label>
+            <select
+              className="form-select form-select-sm"
+              style={{
+                width: 'auto',
+                minWidth: '100px',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.875rem',
+                padding: '0.375rem 0.75rem',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)'
+              }}
+              value={categoryYear}
+              onChange={e => {
+                setCategoryYear(e.target.value);
+                setCategoryMonth('all'); // Reset mes al cambiar año
+              }}
+            >
+              <option value="all">Todos</option>
+              {allYears.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <label className="mb-0" style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
+              Mes:
+            </label>
+            <select
+              className="form-select form-select-sm"
+              style={{
+                width: 'auto',
+                minWidth: '100px',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.875rem',
+                padding: '0.375rem 0.75rem',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)',
+                opacity: categoryYear === 'all' ? 0.5 : 1
+              }}
+              value={categoryMonth}
+              onChange={e => setCategoryMonth(e.target.value)}
+              disabled={categoryYear === 'all'}
+            >
+              <option value="all">Todos</option>
+              {monthsInYear.map(m => (
+                <option key={m} value={m}>{m.toString().padStart(2, '0')}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Sección de transacciones: últimos 6 movimientos */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="card-title mb-4">Tus movimientos</h5>
+      <div 
+        className="card-custom"
+        style={{
+          padding: 'var(--spacing-lg)',
+          backgroundColor: 'var(--bg-primary)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-sm)'
+        }}
+      >
+        <h5 className="mb-4" style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+          <i className="bi bi-list-ul me-2" style={{ color: 'var(--primary)' }}></i>
+          Tus movimientos
+        </h5>
 
-          {transactions.length === 0 ? (
-            <div className="text-center py-5">
-              <p className="mb-3">Todavía no ingresaste ningún gasto.</p>
-              <button
-                className="btn btn-primary"
-                onClick={() => navigate('/add-transaction')}
-              >
-                Agregar primer gasto
-              </button>
+        {transactions.length === 0 ? (
+          <div className="text-center py-5">
+            <div className="mb-3">
+              <i className="bi bi-inbox" style={{ fontSize: '3rem', color: 'var(--text-muted)' }}></i>
             </div>
-          ) : (
-            <>
-              <div className="table-responsive">
-                <table className="table table-striped mb-0">
-                  <thead>
-                    <tr>
-                      <th>Tipo</th>
-                      <th>Monto</th>
-                      <th>Fecha</th>
-                      <th>Categoría</th>
-                      <th>Descripción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions
-                      .slice()
-                      .sort((a, b) => new Date(b.date) - new Date(a.date))
-                      .slice(0, 6)
-                      .map(tx => (
-                        <tr key={tx.id}>
-                          <td className={tx.type === 'income' ? 'text-success' : 'text-danger'}>
+            <p className="mb-3" style={{ color: 'var(--text-secondary)' }}>
+              Todavía no ingresaste ningún gasto.
+            </p>
+            <button
+              className="btn-primary-custom"
+              style={{
+                padding: '0.5rem 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+              onClick={() => navigate('/add-transaction')}
+            >
+              <i className="bi bi-plus-circle me-2"></i>
+              Agregar primer gasto
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="table-responsive">
+              <table className="table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Categoría</th>
+                    <th>Descripción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions
+                    .slice()
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 6)
+                    .map(tx => (
+                      <tr key={tx.id}>
+                        <td>
+                          <span 
+                            className={tx.type === 'income' ? 'badge' : 'badge'}
+                            style={{
+                              backgroundColor: tx.type === 'income' ? 'var(--success-light)' : 'var(--danger-light)',
+                              color: tx.type === 'income' ? 'var(--success)' : 'var(--danger)',
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: 'var(--radius-full)',
+                              fontSize: '0.75rem',
+                              fontWeight: '600'
+                            }}
+                          >
                             {tx.type === 'income' ? 'Ingreso' : 'Gasto'}
-                          </td>
-                          <td>{currencyData.symbol}{Number(tx.amount).toFixed(2)}</td>
-                          <td>{new Date(tx.date).toLocaleString()}</td>
-                          <td>{tx.category || 'Sin categoría'}</td>
-                          <td>{tx.description || '-'}</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+                          </span>
+                        </td>
+                        <td style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                          {currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                          {new Date(tx.date).toLocaleString()}
+                        </td>
+                        <td style={{ color: 'var(--text-primary)' }}>
+                          {tx.category || 'Sin categoría'}
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                          {tx.description || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Botón "Ver más" solo si hay más de 6 movimientos */}
+            {transactions.length > 6 && (
+              <div className="d-flex justify-content-end mt-3">
+                <button
+                  className="btn-secondary-custom"
+                  style={{
+                    padding: '0.5rem 1.25rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => navigate('/movements')}
+                >
+                  Ver más
+                  <i className="bi bi-arrow-right ms-2"></i>
+                </button>
               </div>
-              {/* Botón "Ver más" solo si hay más de 6 movimientos */}
-              {transactions.length > 6 && (
-                <div className="d-flex justify-content-end mt-3">
-                  <button
-                    className="btn btn-outline-primary"
-                    onClick={() => navigate('/movements')}
-                  >
-                    Ver más
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+            )}
+          </>
+        )}
 
-        </div>
       </div>
     </div>
   );

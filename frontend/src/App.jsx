@@ -29,7 +29,10 @@ function App() {
   return (
     <BrowserRouter>
       {/* Barra de navegación superior */}
-      <Navbar onAuthChange={() => setAuthChanged(a => a + 1)} />
+      <Navbar 
+        onAuthChange={() => setAuthChanged(a => a + 1)} 
+        sidebarExpanded={isLoggedIn ? sidebarExpanded : false}
+      />
       {/* Sidebar lateral solo si el usuario está logueado */}
       {isLoggedIn && (
         <Sidebar expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
