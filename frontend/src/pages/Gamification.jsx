@@ -132,21 +132,27 @@ export default function Gamification() {
 
   return (
     <div className="container-fluid py-4">
-      <div className="row mb-4">
-        <div className="col">
-          <h2 className="mb-0">
-            <i className="bi bi-trophy-fill text-warning me-2"></i>
-            Gamificación
-          </h2>
-          <p className="text-muted">Completa desafíos, desbloquea logros y sube de nivel</p>
+      {/* Encabezado */}
+      <div className="d-flex align-items-center mb-4">
+        <i className="bi bi-trophy-fill fs-2 text-warning me-3"></i>
+        <div>
+          <h2 className="mb-0">Gamificación</h2>
+          <p className="text-muted mb-0">Completa desafíos, desbloquea logros y sube de nivel</p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <ul className="nav nav-tabs mb-4">
+      {/* Tabs mejorados */}
+      <ul className="nav nav-pills mb-4 p-2 bg-light rounded-3" style={{ borderRadius: 'var(--border-radius-lg)' }}>
         <li className="nav-item">
           <button
-            className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
+            className={`nav-link ${
+              activeTab === 'dashboard' ? 'active' : ''
+            }`}
+            style={{
+              borderRadius: 'var(--border-radius-md)',
+              transition: 'all 0.2s ease',
+              fontWeight: activeTab === 'dashboard' ? '600' : '500'
+            }}
             onClick={() => setActiveTab('dashboard')}
           >
             <i className="bi bi-speedometer2 me-2"></i>
@@ -155,7 +161,14 @@ export default function Gamification() {
         </li>
         <li className="nav-item">
           <button
-            className={`nav-link ${activeTab === 'achievements' ? 'active' : ''}`}
+            className={`nav-link ${
+              activeTab === 'achievements' ? 'active' : ''
+            }`}
+            style={{
+              borderRadius: 'var(--border-radius-md)',
+              transition: 'all 0.2s ease',
+              fontWeight: activeTab === 'achievements' ? '600' : '500'
+            }}
             onClick={() => setActiveTab('achievements')}
           >
             <i className="bi bi-award me-2"></i>
@@ -164,7 +177,14 @@ export default function Gamification() {
         </li>
         <li className="nav-item">
           <button
-            className={`nav-link ${activeTab === 'challenges' ? 'active' : ''}`}
+            className={`nav-link ${
+              activeTab === 'challenges' ? 'active' : ''
+            }`}
+            style={{
+              borderRadius: 'var(--border-radius-md)',
+              transition: 'all 0.2s ease',
+              fontWeight: activeTab === 'challenges' ? '600' : '500'
+            }}
             onClick={() => setActiveTab('challenges')}
           >
             <i className="bi bi-flag me-2"></i>
@@ -173,7 +193,14 @@ export default function Gamification() {
         </li>
         <li className="nav-item">
           <button
-            className={`nav-link ${activeTab === 'leaderboard' ? 'active' : ''}`}
+            className={`nav-link ${
+              activeTab === 'leaderboard' ? 'active' : ''
+            }`}
+            style={{
+              borderRadius: 'var(--border-radius-md)',
+              transition: 'all 0.2s ease',
+              fontWeight: activeTab === 'leaderboard' ? '600' : '500'
+            }}
             onClick={() => setActiveTab('leaderboard')}
           >
             <i className="bi bi-bar-chart-fill me-2"></i>
@@ -208,23 +235,34 @@ export default function Gamification() {
                 />
               </div>
               <div className="col-lg-4 mb-4">
-                <div className="card shadow-sm">
+                <div className="card border-light shadow-sm h-100" style={{ borderRadius: 'var(--border-radius-lg)' }}>
+                  <div className="card-header bg-info bg-opacity-10 border-0 d-flex align-items-center" style={{ borderRadius: 'var(--border-radius-lg) var(--border-radius-lg) 0 0' }}>
+                    <i className="bi bi-flag-fill fs-5 text-info me-2"></i>
+                    <span className="fw-semibold text-info">Desafíos Activos</span>
+                  </div>
                   <div className="card-body">
-                    <h5 className="card-title">
-                      <i className="bi bi-flag-fill text-info me-2"></i>
-                      Desafíos Activos
-                    </h5>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div>
-                      <h3 className="mb-0">{dashboardData.stats?.active_challenges_count || 0}</h3>
-                      <small className="text-muted">en progreso</small>
-                    </div>
-                    <div className="text-end">
-                      <div className="text-success">
-                        <i className="bi bi-check-circle-fill me-1"></i>
-                        {dashboardData.active_challenges?.filter(c => c.status === 'completed').length || 0} completados
-                        </div>
+                    <div className="text-center mb-3">
+                      <div 
+                        className="d-inline-flex align-items-center justify-content-center rounded-circle"
+                        style={{ 
+                          width: '80px', 
+                          height: '80px',
+                          backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                          border: '3px solid var(--bs-info)'
+                        }}
+                      >
+                        <span className="text-info fw-bold" style={{ fontSize: '2rem' }}>
+                          {dashboardData.stats?.active_challenges_count || 0}
+                        </span>
                       </div>
+                    </div>
+                    <p className="text-center text-muted mb-3">desafíos en progreso</p>
+                    <div className="p-3 bg-success bg-opacity-10 rounded-3 text-center">
+                      <i className="bi bi-check-circle-fill text-success fs-4 mb-2 d-block"></i>
+                      <div className="fw-bold text-dark" style={{ fontSize: '1.2rem' }}>
+                        {dashboardData.recently_completed_challenges?.length || 0}
+                      </div>
+                      <small className="text-muted">completados recientemente</small>
                     </div>
                   </div>
                 </div>
@@ -232,7 +270,10 @@ export default function Gamification() {
 
               {/* Recent Achievements */}
               <div className="col-12 mb-4">
-                <h4 className="mb-3">Logros Recientes</h4>
+                <div className="d-flex align-items-center mb-3">
+                  <i className="bi bi-stars fs-4 text-warning me-2"></i>
+                  <h4 className="mb-0 fw-semibold">Logros Recientes</h4>
+                </div>
                 <div className="row">
                   {dashboardData.recent_achievements.length === 0 ? (
                     <div className="col-12">
@@ -254,7 +295,10 @@ export default function Gamification() {
               {/* Active Challenges */}
               {dashboardData.active_challenges.length > 0 && (
                 <div className="col-12">
-                  <h4 className="mb-3">Desafíos Activos</h4>
+                  <div className="d-flex align-items-center mb-3">
+                    <i className="bi bi-lightning-charge-fill fs-4 text-primary me-2"></i>
+                    <h4 className="mb-0 fw-semibold">Desafíos Activos</h4>
+                  </div>
                   <div className="row">
                     {dashboardData.active_challenges.map(challenge => (
                       <div key={challenge.id} className="col-md-6 col-lg-4 mb-3">
@@ -275,42 +319,100 @@ export default function Gamification() {
             <div>
               {/* Category Filter */}
               <div className="mb-4">
-                <div className="btn-group" role="group">
+                <div className="d-flex align-items-center mb-3">
+                  <i className="bi bi-filter-circle fs-5 text-primary me-2"></i>
+                  <span className="fw-semibold">Filtrar por categoría</span>
+                </div>
+                <div className="btn-group flex-wrap" role="group" style={{ gap: '0.5rem' }}>
                   <button
-                    className={`btn btn-outline-primary ${selectedCategory === 'all' ? 'active' : ''}`}
+                    className={`btn btn-outline-primary ${
+                      selectedCategory === 'all' ? 'active' : ''
+                    }`}
+                    style={{ borderRadius: 'var(--border-radius-md)' }}
                     onClick={() => setSelectedCategory('all')}
                   >
+                    <i className="bi bi-grid-3x3-gap me-1"></i>
                     Todos
                   </button>
                   <button
-                    className={`btn btn-outline-primary ${selectedCategory === 'milestones' ? 'active' : ''}`}
+                    className={`btn btn-outline-primary ${
+                      selectedCategory === 'milestones' ? 'active' : ''
+                    }`}
+                    style={{ borderRadius: 'var(--border-radius-md)' }}
                     onClick={() => setSelectedCategory('milestones')}
                   >
-                    Hitos {categoryCounts.milestones && `(${categoryCounts.milestones.unlocked}/${categoryCounts.milestones.total})`}
+                    <i className="bi bi-bullseye me-1"></i>
+                    Hitos{' '}
+                    {categoryCounts.milestones && (
+                      <span className="badge bg-primary ms-1">
+                        {categoryCounts.milestones.unlocked}/
+                        {categoryCounts.milestones.total}
+                      </span>
+                    )}
                   </button>
                   <button
-                    className={`btn btn-outline-primary ${selectedCategory === 'streaks' ? 'active' : ''}`}
+                    className={`btn btn-outline-primary ${
+                      selectedCategory === 'streaks' ? 'active' : ''
+                    }`}
+                    style={{ borderRadius: 'var(--border-radius-md)' }}
                     onClick={() => setSelectedCategory('streaks')}
                   >
-                    Rachas {categoryCounts.streaks && `(${categoryCounts.streaks.unlocked}/${categoryCounts.streaks.total})`}
+                    <i className="bi bi-fire me-1"></i>
+                    Rachas{' '}
+                    {categoryCounts.streaks && (
+                      <span className="badge bg-danger ms-1">
+                        {categoryCounts.streaks.unlocked}/
+                        {categoryCounts.streaks.total}
+                      </span>
+                    )}
                   </button>
                   <button
-                    className={`btn btn-outline-primary ${selectedCategory === 'discipline' ? 'active' : ''}`}
+                    className={`btn btn-outline-primary ${
+                      selectedCategory === 'discipline' ? 'active' : ''
+                    }`}
+                    style={{ borderRadius: 'var(--border-radius-md)' }}
                     onClick={() => setSelectedCategory('discipline')}
                   >
-                    Disciplina {categoryCounts.discipline && `(${categoryCounts.discipline.unlocked}/${categoryCounts.discipline.total})`}
+                    <i className="bi bi-check-circle me-1"></i>
+                    Disciplina{' '}
+                    {categoryCounts.discipline && (
+                      <span className="badge bg-success ms-1">
+                        {categoryCounts.discipline.unlocked}/
+                        {categoryCounts.discipline.total}
+                      </span>
+                    )}
                   </button>
                   <button
-                    className={`btn btn-outline-primary ${selectedCategory === 'social' ? 'active' : ''}`}
+                    className={`btn btn-outline-primary ${
+                      selectedCategory === 'social' ? 'active' : ''
+                    }`}
+                    style={{ borderRadius: 'var(--border-radius-md)' }}
                     onClick={() => setSelectedCategory('social')}
                   >
-                    Social {categoryCounts.social && `(${categoryCounts.social.unlocked}/${categoryCounts.social.total})`}
+                    <i className="bi bi-people me-1"></i>
+                    Social{' '}
+                    {categoryCounts.social && (
+                      <span className="badge bg-info ms-1">
+                        {categoryCounts.social.unlocked}/
+                        {categoryCounts.social.total}
+                      </span>
+                    )}
                   </button>
                   <button
-                    className={`btn btn-outline-primary ${selectedCategory === 'savings' ? 'active' : ''}`}
+                    className={`btn btn-outline-primary ${
+                      selectedCategory === 'savings' ? 'active' : ''
+                    }`}
+                    style={{ borderRadius: 'var(--border-radius-md)' }}
                     onClick={() => setSelectedCategory('savings')}
                   >
-                    Ahorros {categoryCounts.savings && `(${categoryCounts.savings.unlocked}/${categoryCounts.savings.total})`}
+                    <i className="bi bi-piggy-bank me-1"></i>
+                    Ahorros{' '}
+                    {categoryCounts.savings && (
+                      <span className="badge bg-warning ms-1">
+                        {categoryCounts.savings.unlocked}/
+                        {categoryCounts.savings.total}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>

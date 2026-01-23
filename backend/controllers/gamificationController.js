@@ -24,6 +24,15 @@ async function getDashboard(req, res) {
     const challenges = await gamificationModel.getUserChallenges(userId);
     const activeChallenges = challenges.filter(c => c.status === 'active');
     
+    // Obtener desafíos completados recientemente (últimos 7 días)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentlyCompleted = challenges.filter(c => 
+      c.status === 'completed' && 
+      c.completed_at && 
+      new Date(c.completed_at) >= sevenDaysAgo
+    );
+    
     res.json({
       level: {
         current_level: userLevel.level,
@@ -39,9 +48,11 @@ async function getDashboard(req, res) {
       },
       recent_achievements: recentAchievements,
       active_challenges: activeChallenges,
+      recently_completed_challenges: recentlyCompleted,
       stats: {
         total_unlocked: allAchievements.length,
-        active_challenges_count: activeChallenges.length
+        active_challenges_count: activeChallenges.length,
+        recently_completed_count: recentlyCompleted.length
       }
     });
   } catch (error) {

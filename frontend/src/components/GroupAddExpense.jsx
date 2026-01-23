@@ -121,54 +121,173 @@ export default function GroupAddExpense({ groupId, onExpenseAdded }) {
 
   // --- Render principal ---
   return (
-    <div className="mb-4">
-      <h4>Agregar gasto</h4>
-      <form onSubmit={handleSubmit}>
-        <div className="row g-2 mb-2">
-          <div className="col">
-            <input
-              className="form-control"
-              placeholder="Descripción"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              required
-            />
+    <div 
+      className="card"
+      style={{
+        border: '1px solid var(--border-light)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-sm)',
+        marginBottom: 'var(--spacing-xl)'
+      }}
+    >
+      <div 
+        className="card-header"
+        style={{
+          backgroundColor: 'var(--bg-secondary)',
+          borderBottom: '1px solid var(--border-light)',
+          padding: 'var(--spacing-lg)'
+        }}
+      >
+        <h5 
+          style={{ 
+            marginBottom: 0,
+            fontWeight: '600',
+            color: 'var(--text-primary)',
+            fontSize: '1.1rem'
+          }}
+        >
+          <i className="bi bi-receipt me-2" style={{ color: 'var(--primary)' }}></i>
+          Agregar Gasto al Grupo
+        </h5>
+      </div>
+      
+      <div className="card-body" style={{ padding: 'var(--spacing-xl)' }}>
+        <form onSubmit={handleSubmit}>
+          {/* Campos principales: descripción, monto, pagado por */}
+          <div className="row g-3 mb-4">
+            <div className="col-md-4">
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                <i className="bi bi-text-left me-1"></i>
+                Descripción <span style={{ color: 'var(--danger)' }}>*</span>
+              </label>
+              <input
+                className="form-control"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem'
+                }}
+                placeholder="Ej: Cena en restaurante"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                required
+              />
+            </div>
+            <div className="col-md-4">
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                <i className="bi bi-cash-stack me-1"></i>
+                Monto Total <span style={{ color: 'var(--danger)' }}>*</span>
+              </label>
+              <input
+                className="form-control"
+                type="number"
+                min="0"
+                step="0.01"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem'
+                }}
+                placeholder="Ej: 5000"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                required
+              />
+            </div>
+            <div className="col-md-4">
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                <i className="bi bi-person-check me-1"></i>
+                Pagado Por <span style={{ color: 'var(--danger)' }}>*</span>
+              </label>
+              <select
+                className="form-select"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem'
+                }}
+                value={paidBy}
+                onChange={e => setPaidBy(e.target.value)}
+                required
+              >
+                <option value="">Selecciona quién pagó...</option>
+                {members.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.username || m.name || m.email || m.user_id}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="col">
-            <input
-              className="form-control"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Monto"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              required
-            />
-          </div>
-          <div className="col">
-            <select
-              className="form-select"
-              value={paidBy}
-              onChange={e => setPaidBy(e.target.value)}
-              required
+
+          {/* Sección de reparto */}
+          <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+            <div 
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--spacing-md)'
+              }}
             >
-              <option value="">Pagado por...</option>
-              {members.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.username || m.name || m.email || m.user_id}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="mb-2">
-          <label>Reparto:</label>
-          <div className="row g-2 mb-2">
-            <div className="col-12 mb-2">
+              <label 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.95rem',
+                  marginBottom: 0
+                }}
+              >
+                <i className="bi bi-pie-chart me-2" style={{ color: 'var(--primary)' }}></i>
+                Reparto del Gasto
+              </label>
               <button
                 type="button"
-                className="btn btn-outline-secondary btn-sm"
+                className="btn btn-sm"
+                style={{
+                  backgroundColor: 'var(--info)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-xs) var(--spacing-md)',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all var(--transition-fast)'
+                }}
                 onClick={() => {
                   // Reparte el monto en partes iguales entre todos los miembros
                   if (!amount || isNaN(amount) || Number(amount) <= 0 || members.length === 0) return;
@@ -181,48 +300,156 @@ export default function GroupAddExpense({ groupId, onExpenseAdded }) {
                   setShares(members.map((m, i) => ({ member_id: m.id, share: sharesArr[i].toFixed(2) })));
                   setLocked(members.map(() => false));
                 }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'var(--info-dark)';
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = 'var(--shadow-md)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'var(--info)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
-                Repartir en partes iguales
+                <i className="bi bi-distribute-vertical me-1"></i>
+                Repartir en Partes Iguales
               </button>
             </div>
+
             {/* Campos para repartir el gasto entre miembros, con opción de bloquear/desbloquear */}
-            {members.map((m, i) => (
-              <div className="col-md-3 col-6" key={m.id}>
-                <div className="input-group">
-                  <span className="input-group-text">{m.username || m.name || m.email || m.user_id}</span>
-                  <input
-                    type="number"
-                    className="form-control"
-                    min="0"
-                    step="0.01"
-                    value={shares[i]?.share}
-                    onChange={e => handleShareChange(i, e.target.value)}
-                    required
-                    disabled={locked[i]}
-                  />
-                  <button
-                    type="button"
-                    className={`btn btn-${locked[i] ? 'warning' : 'outline-secondary'}`}
-                    onClick={() => {
-                      setLocked(locked => {
-                        const arr = [...locked];
-                        arr[i] = !arr[i];
-                        return arr;
-                      });
-                    }}
-                    tabIndex={-1}
-                    title={locked[i] ? 'Desbloquear' : 'Bloquear'}
-                  >
-                    {locked[i] ? '🔒' : '🔓'}
-                  </button>
+            <div className="row g-3">
+              {members.map((m, i) => (
+                <div className="col-md-3 col-sm-6" key={m.id}>
+                  <div className="input-group">
+                    <span 
+                      className="input-group-text" 
+                      style={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-light)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.875rem',
+                        fontWeight: '500'
+                      }}
+                    >
+                      {m.username || m.name || m.email || m.user_id}
+                    </span>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min="0"
+                      step="0.01"
+                      style={{
+                        border: '1px solid var(--border-light)',
+                        backgroundColor: locked[i] ? 'var(--warning-light)' : 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.95rem'
+                      }}
+                      value={shares[i]?.share}
+                      onChange={e => handleShareChange(i, e.target.value)}
+                      required
+                      disabled={locked[i]}
+                    />
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{
+                        backgroundColor: locked[i] ? 'var(--warning)' : 'transparent',
+                        color: locked[i] ? 'white' : 'var(--text-secondary)',
+                        border: `1px solid ${locked[i] ? 'var(--warning)' : 'var(--border-light)'}`,
+                        borderRadius: '0 var(--radius-md) var(--radius-md) 0',
+                        padding: '0 12px',
+                        cursor: 'pointer',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                      onClick={() => {
+                        setLocked(locked => {
+                          const arr = [...locked];
+                          arr[i] = !arr[i];
+                          return arr;
+                        });
+                      }}
+                      tabIndex={-1}
+                      title={locked[i] ? 'Desbloquear' : 'Bloquear'}
+                      onMouseEnter={(e) => {
+                        if (!locked[i]) {
+                          e.target.style.backgroundColor = 'var(--bg-secondary)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!locked[i]) {
+                          e.target.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      <i className={`bi bi-${locked[i] ? 'lock-fill' : 'unlock'}`}></i>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div 
+              style={{
+                marginTop: 'var(--spacing-md)',
+                padding: 'var(--spacing-sm) var(--spacing-md)',
+                backgroundColor: 'var(--info-light)',
+                border: '1px solid var(--info)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.875rem',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              <i className="bi bi-info-circle me-2" style={{ color: 'var(--info)' }}></i>
+              <strong>Tip:</strong> Usa el candado para fijar montos específicos. Los campos desbloqueados se ajustarán automáticamente.
+            </div>
           </div>
-        </div>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <button className="btn btn-primary mt-2" type="submit">Agregar gasto</button>
-      </form>
+
+          {error && (
+            <div 
+              className="alert alert-danger"
+              style={{
+                borderRadius: 'var(--radius-md)',
+                marginBottom: 'var(--spacing-lg)',
+                border: '1px solid var(--danger)',
+                backgroundColor: 'var(--danger-light)'
+              }}
+              role="alert"
+            >
+              <i className="bi bi-exclamation-triangle me-2"></i>
+              {error}
+            </div>
+          )}
+
+          <button 
+            className="btn w-100" 
+            type="submit"
+            style={{
+              backgroundColor: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--spacing-sm) var(--spacing-lg)',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = 'var(--primary-dark)';
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = 'var(--shadow-lg)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'var(--primary)';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = 'none';
+            }}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Agregar Gasto al Grupo
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

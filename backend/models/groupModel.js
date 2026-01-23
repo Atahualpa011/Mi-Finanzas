@@ -42,11 +42,55 @@ async function getMemberById(memberId) {
 
 // --- Elimina un miembro del grupo ---
 async function removeMember(groupId, memberId) {
-  const [result] = await pool.execute(
-    `DELETE FROM group_members WHERE id = ? AND group_id = ?`,
-    [memberId, groupId]
-  );
-  return result.affectedRows > 0;
+  // Primero eliminamos todas las referencias a este miembro antes de eliminarlo
+  // para evitar violaciones de Foreign Key
+  
+  try {
+    // 1. Eliminar shares de gastos relacionados con este miembro
+    await pool.execute(
+      `DELETE FROM group_expense_shares WHERE member_id = ?`,
+      [memberId]
+    );
+    
+    // 2. Eliminar gastos pagados por este miembro
+    //    Esto también eliminará automáticamente los shares si tuvieran ON DELETE CASCADE
+    //    pero como no lo tienen, debemos verificar que no queden shares huérfanos
+    const [expenses] = await pool.execute(
+      `SELECT id FROM group_expenses WHERE paid_by_member_id = ?`,
+      [memberId]
+    );
+    
+    for (const expense of expenses) {
+      // Eliminar shares de este gasto
+      await pool.execute(
+        `DELETE FROM group_expense_shares WHERE expense_id = ?`,
+        [expense.id]
+      );
+    }
+    
+    // Ahora sí eliminar los gastos
+    await pool.execute(
+      `DELETE FROM group_expenses WHERE paid_by_member_id = ?`,
+      [memberId]
+    );
+    
+    // 3. Eliminar liquidaciones (settlements) donde este miembro es from o to
+    await pool.execute(
+      `DELETE FROM group_settlements WHERE from_member_id = ? OR to_member_id = ?`,
+      [memberId, memberId]
+    );
+    
+    // 4. Finalmente, eliminar el miembro
+    const [result] = await pool.execute(
+      `DELETE FROM group_members WHERE id = ? AND group_id = ?`,
+      [memberId, groupId]
+    );
+    
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Error al eliminar miembro:', error);
+    throw error;
+  }
 }
 
 // --- Agrega un gasto al grupo y reparte los shares ---

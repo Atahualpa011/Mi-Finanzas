@@ -89,47 +89,269 @@ export default function GroupMembers({ groupId, refresh, onChange }) {
 
   // --- Render principal ---
   return (
-    <div className="mb-4">
-      <h4>Miembros</h4>
-      {/* Formulario para agregar miembro por nombre/email */}
-      <form className="mb-2 d-flex" onSubmit={handleAdd}>
-        <input className="form-control me-2" placeholder="Nombre o email" value={name} onChange={e => setName(e.target.value)} required />
-        <button className="btn btn-success" type="submit">Agregar</button>
-      </form>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <ul className="list-group">
-        {members.filter(m => m.id).map(m => (
-          <li key={m.id} className="list-group-item d-flex justify-content-between align-items-center">
-            <span>
-              {m.username || m.name || m.email || m.user_id}
-            </span>
-            <span>
-              {/* Si el miembro es "vacío" (sin user_id), permite invitar un amigo */}
-              {!m.user_id && (
-                <button
-                  className="btn btn-outline-primary btn-sm me-2"
-                  onClick={async () => {
-                    setShowInvite(m.id);
-                    setSelectedFriendId('');
-                    await fetchFriends();
-                  }}
-                >
-                  Invitar amigo
-                </button>
-              )}
-              {/* SOLO el creador puede eliminar, y no puede eliminarse a sí mismo */}
-              {createdBy == myUserId && m.user_id != myUserId && (
-                <button
-                  className="btn btn-outline-danger btn-sm"
-                  onClick={() => handleDelete(m.id)}
-                >
-                  Eliminar
-                </button>
-              )}
-            </span>
-          </li>
-        ))}
-      </ul>
+    <div 
+      className="card"
+      style={{
+        border: '1px solid var(--border-light)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-sm)',
+        marginBottom: 'var(--spacing-xl)'
+      }}
+    >
+      <div 
+        className="card-header"
+        style={{
+          backgroundColor: 'var(--bg-secondary)',
+          borderBottom: '1px solid var(--border-light)',
+          padding: 'var(--spacing-lg)'
+        }}
+      >
+        <h5 
+          style={{ 
+            marginBottom: 0,
+            fontWeight: '600',
+            color: 'var(--text-primary)',
+            fontSize: '1.1rem'
+          }}
+        >
+          <i className="bi bi-people me-2" style={{ color: 'var(--primary)' }}></i>
+          Miembros del Grupo
+        </h5>
+      </div>
+      
+      <div className="card-body" style={{ padding: 'var(--spacing-xl)' }}>
+        {/* Formulario para agregar miembro por nombre/email */}
+        <form className="mb-4" onSubmit={handleAdd}>
+          <label 
+            className="form-label" 
+            style={{ 
+              fontWeight: '600', 
+              color: 'var(--text-primary)', 
+              fontSize: '0.875rem',
+              marginBottom: 'var(--spacing-sm)'
+            }}
+          >
+            <i className="bi bi-person-plus me-1"></i>
+            Agregar Nuevo Miembro
+          </label>
+          <div className="d-flex gap-2">
+            <input 
+              className="form-control" 
+              style={{
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-sm) var(--spacing-md)',
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                fontSize: '0.95rem',
+                flex: 1
+              }}
+              placeholder="Nombre o email del miembro" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              required 
+            />
+            <button 
+              className="btn" 
+              type="submit"
+              style={{
+                backgroundColor: 'var(--success)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-sm) var(--spacing-lg)',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = 'var(--success-dark)';
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = 'var(--shadow-md)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'var(--success)';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              <i className="bi bi-plus-lg me-1"></i>
+              Agregar
+            </button>
+          </div>
+        </form>
+
+        {error && (
+          <div 
+            className="alert alert-danger"
+            style={{
+              borderRadius: 'var(--radius-md)',
+              marginBottom: 'var(--spacing-lg)',
+              border: '1px solid var(--danger)',
+              backgroundColor: 'var(--danger-light)'
+            }}
+            role="alert"
+          >
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            {error}
+          </div>
+        )}
+
+        {/* Lista de miembros */}
+        <div>
+          <h6 
+            style={{ 
+              fontWeight: '600',
+              color: 'var(--text-primary)',
+              fontSize: '0.95rem',
+              marginBottom: 'var(--spacing-md)'
+            }}
+          >
+            Lista de Miembros ({members.filter(m => m.id).length})
+          </h6>
+          <ul 
+            className="list-group"
+            style={{
+              borderRadius: 'var(--radius-md)'
+            }}
+          >
+            {members.filter(m => m.id).map((m, index) => (
+              <li 
+                key={m.id} 
+                className="list-group-item d-flex justify-content-between align-items-center"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderTop: index === 0 ? '1px solid var(--border-light)' : 'none',
+                  padding: 'var(--spacing-md) var(--spacing-lg)',
+                  backgroundColor: 'white',
+                  transition: 'background-color var(--transition-fast)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'white';
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+                  <i className="bi bi-person-circle" style={{ color: 'var(--primary)', fontSize: '1.25rem' }}></i>
+                  <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
+                    {m.username || m.name || m.email || m.user_id}
+                  </span>
+                  {/* Badge si es el creador */}
+                  {createdBy == m.user_id && (
+                    <span 
+                      className="badge"
+                      style={{
+                        backgroundColor: 'var(--primary)',
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        padding: '3px 8px'
+                      }}
+                    >
+                      <i className="bi bi-star-fill me-1"></i>
+                      Creador
+                    </span>
+                  )}
+                  {/* Badge si es tú */}
+                  {myUserId == m.user_id && createdBy != m.user_id && (
+                    <span 
+                      className="badge"
+                      style={{
+                        backgroundColor: 'var(--info)',
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        padding: '3px 8px'
+                      }}
+                    >
+                      Tú
+                    </span>
+                  )}
+                  {/* Badge si es lugar vacío */}
+                  {!m.user_id && (
+                    <span 
+                      className="badge"
+                      style={{
+                        backgroundColor: 'var(--warning-light)',
+                        color: 'var(--warning)',
+                        border: '1px solid var(--warning)',
+                        fontSize: '0.7rem',
+                        padding: '3px 8px'
+                      }}
+                    >
+                      <i className="bi bi-hourglass-split me-1"></i>
+                      Pendiente
+                    </span>
+                  )}
+                </span>
+                <span style={{ display: 'flex', gap: 'var(--spacing-xs)' }}>
+                  {/* Si el miembro es "vacío" (sin user_id), permite invitar un amigo */}
+                  {!m.user_id && (
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        backgroundColor: 'var(--primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '4px 12px',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                      onClick={async () => {
+                        setShowInvite(m.id);
+                        setSelectedFriendId('');
+                        await fetchFriends();
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = 'var(--primary-dark)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'var(--primary)';
+                      }}
+                    >
+                      <i className="bi bi-envelope me-1"></i>
+                      Invitar Amigo
+                    </button>
+                  )}
+                  {/* SOLO el creador puede eliminar, y no puede eliminarse a sí mismo */}
+                  {createdBy == myUserId && m.user_id != myUserId && (
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        backgroundColor: 'transparent',
+                        color: 'var(--danger)',
+                        border: '1px solid var(--danger)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '4px 12px',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                      onClick={() => handleDelete(m.id)}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = 'var(--danger)';
+                        e.target.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'transparent';
+                        e.target.style.color = 'var(--danger)';
+                      }}
+                    >
+                      <i className="bi bi-trash"></i>
+                    </button>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
       {/* Modal para invitar amigo a ocupar un lugar de miembro */}
       {showInvite && (
         <div
@@ -139,46 +361,165 @@ export default function GroupMembers({ groupId, refresh, onChange }) {
             left: 0,
             width: '100vw',
             height: '100vh',
-            background: '#0008',
+            backgroundColor: 'rgba(0,0,0,0.5)',
             zIndex: 9999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}
+          onClick={() => { setShowInvite(null); setSelectedFriendId(''); }}
         >
           <div
             style={{
-              background: '#fff',
-              padding: 24,
-              borderRadius: 8,
-              maxWidth: 400,
-              width: '100%',
-              boxShadow: '0 4px 32px #0004',
-              pointerEvents: 'auto'
+              backgroundColor: 'white',
+              padding: 0,
+              borderRadius: 'var(--radius-lg)',
+              maxWidth: '500px',
+              width: '90%',
+              boxShadow: 'var(--shadow-xl)',
+              border: '1px solid var(--border-light)'
             }}
-            tabIndex={0}
+            onClick={(e) => e.stopPropagation()}
           >
-            <h5>Invitar amigo a este miembro</h5>
-            {inviteError && <div className="alert alert-danger">{inviteError}</div>}
-            <select
-              className="form-select mb-2"
-              value={selectedFriendId}
-              onChange={e => setSelectedFriendId(e.target.value)}
+            {/* Header */}
+            <div 
+              style={{
+                padding: 'var(--spacing-lg)',
+                borderBottom: '1px solid var(--border-light)',
+                backgroundColor: 'var(--bg-secondary)'
+              }}
             >
-              <option value="">Selecciona un amigo...</option>
-              {friends.map(f => (
-                <option key={f.friend_id} value={f.friend_id}>{f.username}</option>
-              ))}
-            </select>
-            <button
-              className="btn btn-primary me-2"
-              disabled={!selectedFriendId}
-              onClick={() => handleInvite(showInvite, selectedFriendId)}
-            >Enviar invitación</button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => { setShowInvite(null); setSelectedFriendId(''); }}
-            >Cancelar</button>
+              <h5 
+                style={{ 
+                  margin: 0,
+                  fontWeight: '600',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                <i className="bi bi-person-plus-fill me-2" style={{ color: 'var(--primary)' }}></i>
+                Invitar Amigo a este Miembro
+              </h5>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: 'var(--spacing-xl)' }}>
+              {inviteError && (
+                <div 
+                  className="alert alert-danger"
+                  style={{
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: 'var(--spacing-lg)',
+                    border: '1px solid var(--danger)',
+                    backgroundColor: 'var(--danger-light)'
+                  }}
+                >
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  {inviteError}
+                </div>
+              )}
+
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-sm)'
+                }}
+              >
+                <i className="bi bi-people me-1"></i>
+                Selecciona un Amigo
+              </label>
+              <select
+                className="form-select"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem',
+                  marginBottom: 'var(--spacing-lg)'
+                }}
+                value={selectedFriendId}
+                onChange={e => setSelectedFriendId(e.target.value)}
+              >
+                <option value="">Selecciona un amigo...</option>
+                {friends.map(f => (
+                  <option key={f.friend_id} value={f.friend_id}>{f.username}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Footer */}
+            <div 
+              style={{
+                padding: 'var(--spacing-lg)',
+                borderTop: '1px solid var(--border-light)',
+                backgroundColor: 'var(--bg-secondary)',
+                display: 'flex',
+                gap: 'var(--spacing-sm)',
+                justifyContent: 'flex-end'
+              }}
+            >
+              <button
+                className="btn"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-xs) var(--spacing-md)',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all var(--transition-fast)'
+                }}
+                onClick={() => { setShowInvite(null); setSelectedFriendId(''); }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'var(--bg-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn"
+                disabled={!selectedFriendId}
+                style={{
+                  backgroundColor: selectedFriendId ? 'var(--primary)' : 'var(--bg-secondary)',
+                  color: selectedFriendId ? 'white' : 'var(--text-secondary)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-xs) var(--spacing-lg)',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: selectedFriendId ? 'pointer' : 'not-allowed',
+                  transition: 'all var(--transition-fast)',
+                  opacity: selectedFriendId ? 1 : 0.6
+                }}
+                onClick={() => handleInvite(showInvite, selectedFriendId)}
+                onMouseEnter={(e) => {
+                  if (selectedFriendId) {
+                    e.target.style.backgroundColor = 'var(--primary-dark)';
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = 'var(--shadow-md)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedFriendId) {
+                    e.target.style.backgroundColor = 'var(--primary)';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                <i className="bi bi-send me-2"></i>
+                Enviar Invitación
+              </button>
+            </div>
           </div>
         </div>
       )}

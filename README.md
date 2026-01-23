@@ -363,7 +363,7 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 - `POST /api/budgets/alerts/read-all` - Marcar todas las alertas como leídas
 
 ### Gamificación
-- `GET /api/gamification/dashboard` - Obtener panel completo de gamificación
+- `GET /api/gamification/dashboard` - Obtener panel completo de gamificación (incluye desafíos completados en últimos 7 días)
 - `GET /api/gamification/achievements` - Listar todos los logros agrupados por categoría
 - `GET /api/gamification/achievements/:code` - Verificar logro específico
 - `GET /api/gamification/challenges` - Listar desafíos disponibles
@@ -474,6 +474,7 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Progreso en tiempo real
   - Recompensas de XP al completar
   - Estados: disponible, activo, completado, fallido
+  - Dashboard muestra desafíos completados en últimos 7 días
   
 - **Ranking Global:**
   - Top 10 usuarios por nivel y XP

@@ -59,9 +59,13 @@ exports.removeMember = async (req, res) => {
   const { groupId, memberId } = req.params;
   try {
     const ok = await groupModel.removeMember(groupId, memberId);
+    if (!ok) {
+      return res.status(404).json({ error: 'Miembro no encontrado.' });
+    }
     res.json({ ok });
   } catch (err) {
-    res.status(500).json({ error: 'No se pudo quitar el miembro.' });
+    console.error('Error al quitar miembro:', err);
+    res.status(500).json({ error: 'No se pudo quitar el miembro: ' + err.message });
   }
 };
 
