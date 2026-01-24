@@ -13,6 +13,7 @@ export default function GroupAddExpense({ groupId, onExpenseAdded }) {
   // --- Cargar miembros del grupo al montar o cambiar groupId ---
   useEffect(() => {
     const token = localStorage.getItem('token');
+    // Cargar miembros del grupo
     fetch(`/api/groups/${groupId}/members`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
@@ -91,6 +92,7 @@ export default function GroupAddExpense({ groupId, onExpenseAdded }) {
       setError('La suma de los shares debe ser igual al monto.');
       return;
     }
+    
     try {
       // Llama al backend para agregar el gasto al grupo
       const res = await fetch(`/api/groups/${groupId}/expenses`, {

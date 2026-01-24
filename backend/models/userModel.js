@@ -36,7 +36,7 @@ async function findUserByEmail(email) {
 async function getUserProfile(userId) {
   // Trae email y datos de perfil por ID
   const [rows] = await pool.execute(
-    `SELECT u.email, ud.username, ud.full_name, ud.country
+    `SELECT u.email, ud.username, ud.full_name, ud.country, ud.preferred_currency
      FROM users u
      JOIN users_data ud ON u.id = ud.user_id
      WHERE u.id = ?`,
@@ -46,11 +46,11 @@ async function getUserProfile(userId) {
 }
 
 // --- Actualiza el perfil del usuario autenticado ---
-async function updateUserProfile(userId, username, fullName, country) {
+async function updateUserProfile(userId, username, fullName, country, preferredCurrency) {
   // Actualiza los datos en users_data
   await pool.execute(
-    `UPDATE users_data SET username = ?, full_name = ?, country = ? WHERE user_id = ?`,
-    [username, fullName, country, userId]
+    `UPDATE users_data SET username = ?, full_name = ?, country = ?, preferred_currency = ? WHERE user_id = ?`,
+    [username, fullName, country, preferredCurrency || 'ARS', userId]
   );
 }
 

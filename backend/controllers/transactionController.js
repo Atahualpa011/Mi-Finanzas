@@ -18,14 +18,16 @@ exports.getAll = async (req, res) => {
 exports.create = async (req, res) => {
   const {
     type, amount, date, time, categoryId, description,
-    emotion, destination, source
+    emotion, destination, source,
+    currencyCode, currencySymbol
   } = req.body; // Datos enviados por el frontend
   const userId = req.user.userId; // ID del usuario autenticado
 
   try {
     // 1. Crea la transacción principal en la tabla 'transactions'
     const txId = await transactionModel.createTransaction({
-      userId, type, amount, date, time, categoryId, description
+      userId, type, amount, date, time, categoryId, description,
+      currencyCode, currencySymbol
     });
 
     // 2. Si es gasto, guarda detalles en 'expenses' (emoción y destino)

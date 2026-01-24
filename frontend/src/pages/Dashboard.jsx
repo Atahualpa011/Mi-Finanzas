@@ -76,7 +76,7 @@ function getLineChartData(transactions, groupBy, currencySymbol) {
 
 // --- Componente principal del Dashboard ---
 export default function Dashboard() {
-  const { currencyData } = useCurrency(); // Hook para obtener símbolo de moneda
+  const { currencyData, CURRENCIES } = useCurrency(); // Hook para obtener símbolo de moneda y lista
   const [profile, setProfile]           = useState(null); // Datos del usuario
   const [transactions, setTransactions] = useState(null); // Lista de transacciones
   const [groupBy, setGroupBy]           = useState('month'); // Agrupación para el gráfico de línea
@@ -627,6 +627,7 @@ export default function Dashboard() {
                   <tr>
                     <th>Tipo</th>
                     <th>Monto</th>
+                    <th>Moneda</th>
                     <th>Fecha</th>
                     <th>Categoría</th>
                     <th>Descripción</th>
@@ -655,7 +656,10 @@ export default function Dashboard() {
                           </span>
                         </td>
                         <td style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
-                          {currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                          {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                          {CURRENCIES.find(c => c.code === (tx.currency_code || 'ARS'))?.label || 'No especificado'}
                         </td>
                         <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                           {new Date(tx.date).toLocaleString()}

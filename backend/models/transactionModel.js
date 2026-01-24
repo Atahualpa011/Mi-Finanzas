@@ -2,13 +2,15 @@ const pool = require('../db'); // Importa la conexión a la base de datos
 
 // --- Trae todas las transacciones del usuario autenticado ---
 async function getAllByUser(userId) {
-  // Consulta SQL: obtiene todas las transacciones del usuario, con su categoría
+  // Consulta SQL: obtiene todas las transacciones del usuario, con su categoría y moneda
   const [rows] = await pool.execute(
     `SELECT
        t.id,
        t.type,
        CONCAT(t.date, ' ', t.time) AS date,
        t.amount,
+       t.currency_code,
+       t.currency_symbol,
        c.name    AS category,
        t.description
      FROM transactions t
@@ -21,18 +23,20 @@ async function getAllByUser(userId) {
 }
 
 // --- Crea una nueva transacción (gasto o ingreso) ---
-async function createTransaction({ userId, type, amount, date, time, categoryId, description }) {
+async function createTransaction({ userId, type, amount, date, time, categoryId, description, currencyCode, currencySymbol }) {
   // Inserta la transacción principal en la tabla
   const [result] = await pool.execute(
     `INSERT INTO transactions
-       (user_id, type, date, time, amount, category_id, description)
-     VALUES (?,?,?,?,?,?,?)`,
+       (user_id, type, date, time, amount, currency_code, currency_symbol, category_id, description)
+     VALUES (?,?,?,?,?,?,?,?,?)`,
     [
       userId,
       type,
       date,
       time,
       amount,
+      currencyCode || null,
+      currencySymbol || null,
       categoryId ? Number(categoryId) : null,
       description || null
     ]

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../hooks/useCurrency';
 
 export default function Profile() {
   // --- Estados principales ---
@@ -10,6 +11,7 @@ export default function Profile() {
   const [message, setMessage] = useState(null);      // Mensaje de éxito
   const [loading, setLoading] = useState(true);      // Estado de carga
   const navigate = useNavigate();                    // Para redireccionar
+  const { CURRENCIES } = useCurrency();              // Lista de monedas disponibles
 
   // --- Cargar perfil al montar el componente ---
   useEffect(() => {
@@ -24,7 +26,8 @@ export default function Profile() {
         setForm({
           username: data.username,
           fullName: data.fullName,
-          country: data.country
+          country: data.country,
+          preferredCurrency: data.preferredCurrency || 'ARS'
         }); // Inicializa el formulario con los datos actuales
       })
       .catch(() => {
@@ -224,6 +227,22 @@ export default function Profile() {
                       {profile.country}
                     </div>
                   </div>
+
+                  <div 
+                    style={{
+                      padding: 'var(--spacing-lg)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      borderRadius: 'var(--radius-md)'
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600', marginBottom: 'var(--spacing-xs)' }}>
+                      <i className="bi bi-currency-exchange me-1"></i>
+                      Moneda Favorita
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {CURRENCIES.find(c => c.code === (profile.preferredCurrency || 'ARS'))?.label || 'Pesos argentinos'}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Botones de acción */}
@@ -411,6 +430,42 @@ export default function Profile() {
                       onChange={handleChange}
                       required
                     />
+                  </div>
+                  <div className="mb-4">
+                    <label 
+                      className="form-label" 
+                      style={{ 
+                        fontWeight: '600', 
+                        color: 'var(--text-primary)', 
+                        fontSize: '0.875rem',
+                        marginBottom: 'var(--spacing-xs)'
+                      }}
+                    >
+                      <i className="bi bi-currency-exchange me-1"></i>
+                      Moneda Favorita <span style={{ color: 'var(--danger)' }}>*</span>
+                    </label>
+                    <select
+                      className="form-select"
+                      style={{
+                        border: '1px solid var(--border-light)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: 'var(--spacing-sm) var(--spacing-md)',
+                        backgroundColor: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.95rem',
+                        transition: 'all var(--transition-fast)'
+                      }}
+                      name="preferredCurrency"
+                      value={form.preferredCurrency}
+                      onChange={handleChange}
+                      required
+                    >
+                      {CURRENCIES.map(curr => (
+                        <option key={curr.code} value={curr.code}>
+                          {curr.symbol} - {curr.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <button 
                     type="submit" 

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useCurrency } from '../hooks/useCurrency';
 
 // Definición de las emociones posibles, agrupadas por tipo
 const EMOCIONES = [
@@ -52,6 +53,23 @@ export default function AddTransaction() {
   const [error, setError]         = useState(null);  // Mensaje de error
   const navigate                  = useNavigate();   // Para redirigir tras guardar
   const [categories, setCategories] = useState([]);  // Lista de categorías disponibles
+  const { CURRENCIES } = useCurrency();               // Lista de monedas disponibles
+  const [selectedCurrency, setSelectedCurrency] = useState('ARS'); // Moneda seleccionada para esta transacción
+
+  // --- Cargar moneda favorita del perfil al montar ---
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch('http://localhost:3001/api/profile', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.preferredCurrency) {
+          setSelectedCurrency(data.preferredCurrency);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   // --- Cargar categorías desde el backend al montar el componente ---
   useEffect(() => {
@@ -71,6 +89,9 @@ export default function AddTransaction() {
 
     const token = localStorage.getItem('token');
 
+    // Obtener datos de la moneda seleccionada
+    const currencyData = CURRENCIES.find(c => c.code === selectedCurrency) || CURRENCIES[0];
+
     // Armamos el payload incluyendo solo los campos de detalle según tipo
     const payload = {
       type,
@@ -79,6 +100,8 @@ export default function AddTransaction() {
       time,
       categoryId,
       description,
+      currencyCode: selectedCurrency,           // Código de moneda seleccionada
+      currencySymbol: currencyData.symbol, // Símbolo de moneda seleccionada
       ...(type === 'expense'
         ? { emotion: emotion.map(e => e.value).join(','), destination }
         : { source }
@@ -192,38 +215,75 @@ export default function AddTransaction() {
             </select>
           </div>
 
-          {/* Monto */}
-          <div className="mb-3">
-            <label 
-              className="form-label" 
-              style={{ 
-                fontWeight: '600', 
-                color: 'var(--text-primary)', 
-                fontSize: '0.875rem',
-                marginBottom: 'var(--spacing-xs)'
-              }}
-            >
-              Monto <span style={{ color: 'var(--danger)' }}>*</span>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              style={{
-                border: '1px solid var(--border-light)',
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--spacing-sm) var(--spacing-md)',
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                fontSize: '0.95rem',
-                transition: 'all var(--transition-fast)'
-              }}
-              value={amount}
-              min="0"
-              step="0.01"
-              required
-              onChange={e => setAmount(e.target.value)}
-              placeholder="0.00"
-            />
+          {/* Monto y Moneda */}
+          <div className="row">
+            <div className="col-8 mb-3">
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                Monto <span style={{ color: 'var(--danger)' }}>*</span>
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem',
+                  transition: 'all var(--transition-fast)'
+                }}
+                value={amount}
+                min="0"
+                step="0.01"
+                required
+                onChange={e => setAmount(e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="col-4 mb-3">
+              <label 
+                className="form-label" 
+                style={{ 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.875rem',
+                  marginBottom: 'var(--spacing-xs)'
+                }}
+              >
+                <i className="bi bi-currency-exchange me-1"></i>
+                Moneda
+              </label>
+              <select
+                className="form-select"
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem',
+                  transition: 'all var(--transition-fast)'
+                }}
+                value={selectedCurrency}
+                onChange={e => setSelectedCurrency(e.target.value)}
+              >
+                {CURRENCIES.map(curr => (
+                  <option key={curr.code} value={curr.code}>
+                    {curr.symbol}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Fecha y Hora */}

@@ -8,7 +8,7 @@ export default function Movements() {
   const [message, setMessage] = useState(null);
   const [modalIndex, setModalIndex] = useState(null); // Índice de la sugerencia seleccionada
   const [autoModalShown, setAutoModalShown] = useState(false);
-  const { currencyData } = useCurrency();                 // Hook para obtener el símbolo de moneda
+  const { currencyData, CURRENCIES } = useCurrency();     // Hook para obtener símbolo y lista de monedas
 
   // --- Cargar movimientos y sugerencias al montar ---
   useEffect(() => {
@@ -466,6 +466,7 @@ export default function Movements() {
                     <thead>
                       <tr>
                         <th>Monto</th>
+                        <th>Moneda</th>
                         <th>Fecha</th>
                         <th>Categoría</th>
                         <th>Descripción</th>
@@ -476,7 +477,10 @@ export default function Movements() {
                       {transactions.filter(tx => tx.type === 'expense').map(tx => (
                         <tr key={tx.id}>
                           <td style={{ fontWeight: '600', color: 'var(--danger)' }}>
-                            {currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                            {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            {CURRENCIES.find(c => c.code === (tx.currency_code || currencyData.currency || 'ARS'))?.label || 'No especificado'}
                           </td>
                           <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                             {new Date(tx.date).toLocaleString()}
@@ -565,6 +569,7 @@ export default function Movements() {
                     <thead>
                       <tr>
                         <th>Monto</th>
+                        <th>Moneda</th>
                         <th>Fecha</th>
                         <th>Categoría</th>
                         <th>Descripción</th>
@@ -575,7 +580,10 @@ export default function Movements() {
                       {transactions.filter(tx => tx.type === 'income').map(tx => (
                         <tr key={tx.id}>
                           <td style={{ fontWeight: '600', color: 'var(--success)' }}>
-                            {currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                            {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            {CURRENCIES.find(c => c.code === (tx.currency_code || currencyData.currency || 'ARS'))?.label || 'No especificado'}
                           </td>
                           <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                             {new Date(tx.date).toLocaleString()}

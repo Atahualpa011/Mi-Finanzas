@@ -7,8 +7,8 @@ exports.getProfile = async (req, res) => {
     const user = await userModel.getUserProfile(req.user.userId);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     // Desestructura y adapta los campos para el frontend
-    const { email, username, full_name: fullName, country } = user;
-    return res.json({ email, username, fullName, country }); // Responde al frontend con los datos
+    const { email, username, full_name: fullName, country, preferred_currency: preferredCurrency } = user;
+    return res.json({ email, username, fullName, country, preferredCurrency: preferredCurrency || 'ARS' }); // Responde al frontend con los datos
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Error al obtener perfil' }); // Error de servidor
@@ -17,10 +17,10 @@ exports.getProfile = async (req, res) => {
 
 // --- Actualizar perfil del usuario autenticado ---
 exports.updateProfile = async (req, res) => {
-  const { username, fullName, country } = req.body; // Datos enviados por el frontend
+  const { username, fullName, country, preferredCurrency } = req.body; // Datos enviados por el frontend
   try {
     // Actualiza los datos en la BD usando el modelo
-    await userModel.updateUserProfile(req.user.userId, username, fullName, country);
+    await userModel.updateUserProfile(req.user.userId, username, fullName, country, preferredCurrency);
     return res.json({ message: 'Perfil actualizado' }); // Responde al frontend
   } catch (err) {
     console.error('ERROR in updateProfile:', err);
