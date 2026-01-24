@@ -5,6 +5,40 @@ import StreakDisplay from '../components/StreakDisplay';
 import ChallengeCard from '../components/ChallengeCard';
 import AchievementNotification from '../components/AchievementNotification';
 
+// Mapeo de categorías para nombres en español e íconos
+const CATEGORY_CONFIG = {
+  milestones: { 
+    name: 'Hitos', 
+    icon: 'bi-bullseye',
+    badgeColor: 'bg-primary'
+  },
+  streaks: { 
+    name: 'Rachas', 
+    icon: 'bi-fire',
+    badgeColor: 'bg-danger'
+  },
+  discipline: { 
+    name: 'Disciplina', 
+    icon: 'bi-check-circle',
+    badgeColor: 'bg-success'
+  },
+  social: { 
+    name: 'Social', 
+    icon: 'bi-people',
+    badgeColor: 'bg-info'
+  },
+  savings: { 
+    name: 'Ahorros', 
+    icon: 'bi-piggy-bank',
+    badgeColor: 'bg-warning'
+  },
+  investments: { 
+    name: 'Inversiones', 
+    icon: 'bi-graph-up-arrow',
+    badgeColor: 'bg-primary'
+  }
+};
+
 export default function Gamification() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
@@ -14,6 +48,7 @@ export default function Gamification() {
   
   // Achievements data
   const [achievements, setAchievements] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   
   // Challenges data
@@ -50,6 +85,8 @@ export default function Gamification() {
         });
         if (res.ok) {
           const data = await res.json();
+          // Guarda las categorías disponibles
+          setAvailableCategories(data.categories || []);
           // Convierte el objeto de logros en un array por categoría
           const achievementsArray = Object.keys(data.achievements).map(category => ({
             category,
@@ -334,86 +371,35 @@ export default function Gamification() {
                     <i className="bi bi-grid-3x3-gap me-1"></i>
                     Todos
                   </button>
-                  <button
-                    className={`btn btn-outline-primary ${
-                      selectedCategory === 'milestones' ? 'active' : ''
-                    }`}
-                    style={{ borderRadius: 'var(--border-radius-md)' }}
-                    onClick={() => setSelectedCategory('milestones')}
-                  >
-                    <i className="bi bi-bullseye me-1"></i>
-                    Hitos{' '}
-                    {categoryCounts.milestones && (
-                      <span className="badge bg-primary ms-1">
-                        {categoryCounts.milestones.unlocked}/
-                        {categoryCounts.milestones.total}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    className={`btn btn-outline-primary ${
-                      selectedCategory === 'streaks' ? 'active' : ''
-                    }`}
-                    style={{ borderRadius: 'var(--border-radius-md)' }}
-                    onClick={() => setSelectedCategory('streaks')}
-                  >
-                    <i className="bi bi-fire me-1"></i>
-                    Rachas{' '}
-                    {categoryCounts.streaks && (
-                      <span className="badge bg-danger ms-1">
-                        {categoryCounts.streaks.unlocked}/
-                        {categoryCounts.streaks.total}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    className={`btn btn-outline-primary ${
-                      selectedCategory === 'discipline' ? 'active' : ''
-                    }`}
-                    style={{ borderRadius: 'var(--border-radius-md)' }}
-                    onClick={() => setSelectedCategory('discipline')}
-                  >
-                    <i className="bi bi-check-circle me-1"></i>
-                    Disciplina{' '}
-                    {categoryCounts.discipline && (
-                      <span className="badge bg-success ms-1">
-                        {categoryCounts.discipline.unlocked}/
-                        {categoryCounts.discipline.total}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    className={`btn btn-outline-primary ${
-                      selectedCategory === 'social' ? 'active' : ''
-                    }`}
-                    style={{ borderRadius: 'var(--border-radius-md)' }}
-                    onClick={() => setSelectedCategory('social')}
-                  >
-                    <i className="bi bi-people me-1"></i>
-                    Social{' '}
-                    {categoryCounts.social && (
-                      <span className="badge bg-info ms-1">
-                        {categoryCounts.social.unlocked}/
-                        {categoryCounts.social.total}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    className={`btn btn-outline-primary ${
-                      selectedCategory === 'savings' ? 'active' : ''
-                    }`}
-                    style={{ borderRadius: 'var(--border-radius-md)' }}
-                    onClick={() => setSelectedCategory('savings')}
-                  >
-                    <i className="bi bi-piggy-bank me-1"></i>
-                    Ahorros{' '}
-                    {categoryCounts.savings && (
-                      <span className="badge bg-warning ms-1">
-                        {categoryCounts.savings.unlocked}/
-                        {categoryCounts.savings.total}
-                      </span>
-                    )}
-                  </button>
+                  
+                  {/* Botones de categoría dinámicos */}
+                  {availableCategories.map(category => {
+                    const config = CATEGORY_CONFIG[category] || {
+                      name: category,
+                      icon: 'bi-star',
+                      badgeColor: 'bg-secondary'
+                    };
+                    
+                    return (
+                      <button
+                        key={category}
+                        className={`btn btn-outline-primary ${
+                          selectedCategory === category ? 'active' : ''
+                        }`}
+                        style={{ borderRadius: 'var(--border-radius-md)' }}
+                        onClick={() => setSelectedCategory(category)}
+                      >
+                        <i className={`${config.icon} me-1`}></i>
+                        {config.name}{' '}
+                        {categoryCounts[category] && (
+                          <span className={`badge ${config.badgeColor} ms-1`}>
+                            {categoryCounts[category].unlocked}/
+                            {categoryCounts[category].total}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -424,24 +410,28 @@ export default function Gamification() {
                   No hay logros disponibles en esta categoría.
                 </div>
               ) : (
-                filteredAchievements.map(category => (
-                  <div key={category.category} className="mb-5">
-                    <h4 className="mb-3 text-capitalize">
-                      {category.category === 'milestones' && 'Hitos'}
-                      {category.category === 'streaks' && 'Rachas'}
-                      {category.category === 'discipline' && 'Disciplina'}
-                      {category.category === 'social' && 'Social'}
-                      {category.category === 'savings' && 'Ahorros'}
-                    </h4>
-                    <div className="row">
-                      {(category.achievements || []).map(achievement => (
-                        <div key={achievement.code} className="col-md-6 col-lg-4 col-xl-3 mb-3">
-                          <AchievementCard achievement={achievement} />
-                        </div>
-                      ))}
+                filteredAchievements.map(category => {
+                  const config = CATEGORY_CONFIG[category.category] || {
+                    name: category.category,
+                    icon: 'bi-star'
+                  };
+                  
+                  return (
+                    <div key={category.category} className="mb-5">
+                      <h4 className="mb-3">
+                        <i className={`${config.icon} me-2`}></i>
+                        {config.name}
+                      </h4>
+                      <div className="row">
+                        {(category.achievements || []).map(achievement => (
+                          <div key={achievement.code} className="col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <AchievementCard achievement={achievement} />
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}

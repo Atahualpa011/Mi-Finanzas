@@ -71,14 +71,14 @@ async function getAchievements(req, res) {
     const userId = req.user.userId;
     const achievements = await gamificationModel.getUserAchievements(userId);
     
-    // Agrupar por categoría
-    const grouped = {
-      milestones: achievements.filter(a => a.category === 'milestones'),
-      streaks: achievements.filter(a => a.category === 'streaks'),
-      discipline: achievements.filter(a => a.category === 'discipline'),
-      social: achievements.filter(a => a.category === 'social'),
-      savings: achievements.filter(a => a.category === 'savings')
-    };
+    // Obtener categorías únicas dinámicamente
+    const categories = [...new Set(achievements.map(a => a.category))];
+    
+    // Agrupar por categoría dinámicamente
+    const grouped = {};
+    categories.forEach(category => {
+      grouped[category] = achievements.filter(a => a.category === category);
+    });
     
     // Calcular estadísticas
     const totalAchievements = achievements.length;
@@ -89,6 +89,7 @@ async function getAchievements(req, res) {
     
     res.json({
       achievements: grouped,
+      categories: categories, // Enviar categorías disponibles
       stats: {
         total: totalAchievements,
         unlocked: unlockedCount,

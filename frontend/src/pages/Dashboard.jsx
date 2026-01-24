@@ -79,6 +79,8 @@ export default function Dashboard() {
   const { currencyData, CURRENCIES } = useCurrency(); // Hook para obtener símbolo de moneda y lista
   const [profile, setProfile]           = useState(null); // Datos del usuario
   const [transactions, setTransactions] = useState(null); // Lista de transacciones
+  const [investments, setInvestments]   = useState(null); // Lista de inversiones (Fase 3)
+  const [investmentSummary, setInvestmentSummary] = useState(null); // Resumen de inversiones (Fase 3)
   const [groupBy, setGroupBy]           = useState('month'); // Agrupación para el gráfico de línea
   const [chartType, setChartType]       = useState('pie'); // 'pie' o 'bar'
   const [selectedYear, setSelectedYear] = useState('all'); // Filtro de año para el gráfico de línea
@@ -92,7 +94,7 @@ export default function Dashboard() {
     if (!token) return navigate('/login', { replace: true });
 
     // 1) Trae perfil del usuario
-    fetch('http://localhost:3001/api/profile', {
+    fetch('/api/profile', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
@@ -100,7 +102,7 @@ export default function Dashboard() {
       .catch(() => { localStorage.removeItem('token'); navigate('/login', { replace: true }); });
 
     // 2) Trae transacciones del usuario
-    fetch('http://localhost:3001/api/transactions', {
+    fetch('/api/transactions', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
@@ -108,6 +110,28 @@ export default function Dashboard() {
       .catch(err => {
         console.error(err);
         setTransactions([]); // Si falla, deja vacío
+      });
+
+    // 3) Trae inversiones del usuario (Fase 3)
+    fetch('/api/investments', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(setInvestments)
+      .catch(err => {
+        console.error(err);
+        setInvestments([]); // Si falla, deja vacío
+      });
+
+    // 4) Trae resumen de inversiones (Fase 3)
+    fetch('/api/investments/summary', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(setInvestmentSummary)
+      .catch(err => {
+        console.error(err);
+        setInvestmentSummary(null);
       });
   }, [navigate]);
 
@@ -579,6 +603,136 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ============ FASE 3: RESUMEN DE INVERSIONES ============ */}
+      {investments && investments.length > 0 && investmentSummary && (
+        <div className="mb-4">
+          <div 
+            className="card-custom"
+            style={{
+              padding: 'var(--spacing-lg)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: 'var(--radius-lg)',
+              border: 'none',
+              boxShadow: 'var(--shadow-md)',
+              color: 'white'
+            }}
+          >
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="mb-0" style={{ fontWeight: '600', color: 'white' }}>
+                <i className="bi bi-graph-up-arrow me-2"></i>
+                Portafolio de Inversiones
+              </h5>
+              <button
+                className="btn btn-light btn-sm"
+                onClick={() => navigate('/investments')}
+                style={{ fontSize: '0.875rem' }}
+              >
+                Ver detalles
+                <i className="bi bi-arrow-right ms-1"></i>
+              </button>
+            </div>
+
+            <div className="row g-3">
+              {/* Total Invertido */}
+              <div className="col-6 col-md-3">
+                <div style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.15)', 
+                  borderRadius: 'var(--radius-md)', 
+                  padding: 'var(--spacing-md)',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '0.25rem' }}>
+                    Total Invertido
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>
+                    ${parseFloat(investmentSummary.total_invested || 0).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Valor Actual */}
+              <div className="col-6 col-md-3">
+                <div style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.15)', 
+                  borderRadius: 'var(--radius-md)', 
+                  padding: 'var(--spacing-md)',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '0.25rem' }}>
+                    Valor Actual
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>
+                    ${parseFloat(investmentSummary.total_current_value || 0).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Ganancia/Pérdida */}
+              <div className="col-6 col-md-3">
+                <div style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.15)', 
+                  borderRadius: 'var(--radius-md)', 
+                  padding: 'var(--spacing-md)',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '0.25rem' }}>
+                    Ganancia/Pérdida
+                  </div>
+                  <div style={{ 
+                    fontSize: '1.25rem', 
+                    fontWeight: '700',
+                    color: parseFloat(investmentSummary.total_profit_loss || 0) >= 0 ? '#4ade80' : '#fca5a5'
+                  }}>
+                    {parseFloat(investmentSummary.total_profit_loss || 0) >= 0 ? '+' : ''}
+                    ${parseFloat(investmentSummary.total_profit_loss || 0).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Rendimiento */}
+              <div className="col-6 col-md-3">
+                <div style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.15)', 
+                  borderRadius: 'var(--radius-md)', 
+                  padding: 'var(--spacing-md)',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9, marginBottom: '0.25rem' }}>
+                    Rendimiento
+                  </div>
+                  <div style={{ 
+                    fontSize: '1.25rem', 
+                    fontWeight: '700',
+                    color: parseFloat(investmentSummary.total_percentage || 0) >= 0 ? '#4ade80' : '#fca5a5'
+                  }}>
+                    {parseFloat(investmentSummary.total_percentage || 0) >= 0 ? '+' : ''}
+                    {parseFloat(investmentSummary.total_percentage || 0).toFixed(2)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mini estadísticas */}
+            <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+              <div className="row text-center">
+                <div className="col-6">
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>Inversiones Activas</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                    {investmentSummary.active_count || 0}
+                  </div>
+                </div>
+                <div className="col-6">
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>Inversiones Cerradas</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                    {investmentSummary.closed_count || 0}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sección de transacciones: últimos 6 movimientos */}
       <div 

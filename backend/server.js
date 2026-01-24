@@ -18,6 +18,7 @@ const analysisRoutes    = require('./routes/analysisRoutes');    // Análisis y 
 const suggestedTransactionRoutes = require('./routes/suggestedTransactionRoutes'); // Transacciones sugeridas
 const budgetRoutes      = require('./routes/budgetRoutes');      // Presupuestos personales y grupales
 const gamificationRoutes = require('./routes/gamificationRoutes'); // Gamificación (logros, desafíos, niveles)
+const investmentRoutes  = require('./routes/investmentRoutes');  // Inversiones y seguimiento de portafolio
 
 // --- Usar rutas bajo el prefijo /api ---
 app.use('/api',           authRoutes);        // /api/register, /api/login
@@ -31,6 +32,7 @@ app.use('/api/analysis',   analysisRoutes);   // /api/analysis/emotional
 app.use('/api/suggested-transactions', suggestedTransactionRoutes); // /api/suggested-transactions
 app.use('/api/budgets',    budgetRoutes);     // /api/budgets
 app.use('/api/gamification', gamificationRoutes); // /api/gamification
+app.use('/api/investments', investmentRoutes); // /api/investments
 
 // --- Iniciar el servidor en el puerto 3001 ---
 app.listen(3001, () => console.log('API escuchando en puerto 3001'));

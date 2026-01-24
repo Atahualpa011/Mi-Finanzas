@@ -55,6 +55,7 @@ AppFinanzas/
 │   │   ├── profileController.js
 │   │   ├── budgetController.js
 │   │   ├── gamificationController.js
+│   │   ├── investmentController.js
 │   │   └── suggestedTransactionController.js
 │   ├── models/                # Acceso a datos (queries SQL)
 │   │   ├── userModel.js
@@ -65,12 +66,7 @@ AppFinanzas/
 │   │   ├── categoryModel.js
 │   │   ├── budgetModel.js
 │   │   ├── gamificationModel.js
-│   │   └── suggestedTransactionModel.js
-│   │   ├── groupModel.js
-│   │   ├── friendModel.js
-│   │   ├── transferModel.js
-│   │   ├── categoryModel.js
-│   │   ├── budgetModel.js
+│   │   ├── investmentModel.js
 │   │   └── suggestedTransactionModel.js
 │   ├── routes/                # Definición de endpoints de la API
 │   │   ├── authRoutes.js
@@ -83,6 +79,7 @@ AppFinanzas/
 │   │   ├── profileRoutes.js
 │   │   ├── budgetRoutes.js
 │   │   ├── gamificationRoutes.js
+│   │   ├── investmentRoutes.js
 │   │   └── suggestedTransactionRoutes.js
 │   └── middleware/            # Middleware personalizado
 │       ├── authenticate.js    # Verificación de JWT
@@ -102,6 +99,7 @@ AppFinanzas/
 │   │   │   ├── GroupsList.jsx
 │   │   │   ├── GroupDetail.jsx
 │   │   │   ├── Budgets.jsx   # Gestión de presupuestos
+│   │   │   ├── Investments.jsx # Gestión de inversiones
 │   │   │   ├── Gamification.jsx # Sistema de gamificación
 │   │   │   ├── EmotionalAnalysis.jsx
 │   │   │   └── Profile.jsx
@@ -137,7 +135,8 @@ AppFinanzas/
     ├── schema.sql            # Esquema completo de la base de datos
     ├── currency_migration.sql # Migración del sistema de monedas
     ├── budgets_migration.sql # Migración de presupuestos y alertas
-    └── gamification_migration.sql # Migración del sistema de gamificación
+    ├── gamification_migration.sql # Migración del sistema de gamificación
+    └── investments_migration.sql # Migración del sistema de inversiones
 ```
 
 ## Configuración e Instalación
@@ -283,7 +282,18 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 - `user_challenges` - Progreso de usuarios en desafíos
 - `user_levels` - Niveles y puntos de experiencia (XP)
 
-**Para ver el schema completo:** Consultar `db/schema.sql`, `db/currency_migration.sql`, `db/budgets_migration.sql` y `db/gamification_migration.sql`
+### Módulo de Inversiones
+- `investments` - Registro de inversiones del usuario con soporte multi-moneda
+  - Tipos: plazo_fijo, acciones, cripto, fondos, bonos, inmuebles, otros
+  - Estados: active, closed
+  - `currency_code` VARCHAR(3) - Código ISO de la moneda
+  - `currency_symbol` VARCHAR(5) - Símbolo de la moneda
+- `investment_valuations` - Historial de valuaciones de cada inversión
+  - `valuation_date` DATE - Fecha de la valuación
+  - `current_value` DECIMAL(15,2) - Valor en ese momento
+  - `notes` TEXT - Notas opcionales (dividendos, splits, etc.)
+
+**Para ver el schema completo:** Consultar `db/schema.sql`, `db/currency_migration.sql`, `db/budgets_migration.sql`, `db/gamification_migration.sql`, `db/investments_migration.sql` y `db/investments_achievements.sql`
 
 ## API Endpoints
 
@@ -366,6 +376,17 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 - `POST /api/budgets/alerts/:id/read` - Marcar alerta como leída
 - `POST /api/budgets/alerts/read-all` - Marcar todas las alertas como leídas
 
+### Inversiones
+- `GET /api/investments` - Listar todas las inversiones con ganancia/pérdida
+- `GET /api/investments/summary` - Obtener resumen agregado (totales, rendimiento)
+- `GET /api/investments/:id` - Obtener inversión específica
+- `POST /api/investments` - Crear nueva inversión (crea valuación inicial automática)
+- `PUT /api/investments/:id` - Actualizar inversión (solo nombre, descripción, plataforma)
+- `DELETE /api/investments/:id` - Eliminar inversión (con cascade a valuaciones)
+- `POST /api/investments/:id/close` - Cerrar inversión (marca como finalizada)
+- `GET /api/investments/:id/valuations` - Obtener historial de valuaciones
+- `POST /api/investments/:id/valuations` - Crear nueva valuación (solo si está activa)
+
 ### Gamificación
 - `GET /api/gamification/dashboard` - Obtener panel completo de gamificación (incluye desafíos completados en últimos 7 días)
 - `GET /api/gamification/achievements` - Listar todos los logros agrupados por categoría
@@ -398,6 +419,12 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
 - Gráficos de distribución por categorías
 - Visualización de tendencias temporales
 - Balance general
+- Card de resumen de inversiones (si hay inversiones activas)
+  - Total invertido y valor actual
+  - Ganancia/pérdida consolidada
+  - Rendimiento porcentual total
+  - Contador de inversiones activas y cerradas
+  - Acceso directo a página de inversiones
 
 ### 2. Gestión de Movimientos
 - Registro de ingresos y gastos personales
@@ -452,30 +479,82 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
 - **Monedas Soportadas:** ARS (Peso argentino), USD (Dólar), EUR (Euro), BRL (Real brasileño)
 - **Moneda Preferida:** Configuración por usuario en el perfil
 - **Por Transacción:** Cada ingreso/gasto guarda su moneda original
+- **Por Inversión:** Cada inversión guarda su moneda (independiente del usuario)
 - **Visualización:**
   - Símbolo de moneda junto al monto en todas las vistas
   - Columna dedicada mostrando nombre completo de la moneda
-  - Selector de moneda en formulario de nueva transacción
+  - Selector de moneda en formularios de transacciones e inversiones
 - **Compatibilidad:** Transacciones antiguas sin moneda muestran la moneda preferida del usuario
-- **Alcance:** Solo transacciones personales (grupos y transferencias usan moneda única)
+- **Alcance:** Transacciones personales e inversiones (grupos y transferencias usan moneda única)
 
-### 8. Personalización
+### 8. Sistema de Inversiones
+- **Tipos de Inversión:** Plazo fijo, Acciones, Criptomonedas, Fondos comunes, Bonos, Inmuebles, Otros
+- **CRUD Completo:**
+  - Crear inversión con monto inicial y moneda
+  - Editar nombre, descripción y plataforma
+  - Eliminar inversión (con cascade a historial)
+- **Seguimiento de Valor:**
+  - Actualizar valor actual mediante valuaciones
+  - Historial completo de valuaciones con fechas y notas
+  - Cálculo automático de ganancia/pérdida y rendimiento porcentual
+- **Estados:**
+  - Activa: Permite actualizaciones de valor
+  - Cerrada: No se puede modificar (registro histórico)
+- **Funcionalidades Avanzadas:**
+  - Modal de actualización rápida de valor
+  - Modal de historial con tabla de evolución
+  - Cierre de inversión con monto final
+  - Resumen agregado (total invertido, valor actual, ganancia total, rendimiento)
+- **Visualización:**
+  - Tarjetas de resumen con métricas clave
+  - Tabla con iconos por tipo de inversión
+  - Colores indicadores (verde=ganancia, rojo=pérdida)
+  - Badges de estado (activa/cerrada)
+  - Card de resumen en Dashboard principal con métricas consolidadas
+- **Filtros Avanzados:**
+  - Búsqueda por nombre, plataforma o descripción
+  - Filtro por tipo de inversión
+  - Filtro por estado (activas/cerradas)
+  - Contador de resultados filtrados
+  - Botón de limpieza rápida
+- **Integración con Gamificación:**
+  - 18 logros exclusivos de inversiones
+  - Logros por primera inversión y diversificación
+  - Logros por tipo (cripto, acciones, inmuebles)
+  - Logros por rentabilidad (10%, 25%, 50% de ganancia)
+  - Logros por seguimiento activo (valuaciones)
+  - Logros por portafolio ($100K, $500K, $1M)
+- **Automatización al Cerrar:**
+  - Creación automática de transacción con ganancia/pérdida
+  - La transacción refleja el resultado de la inversión
+  - Verificación automática de logros de rentabilidad
+  - Mantiene histórico completo en ambos módulos
+- **Multi-moneda:** Cada inversión mantiene su moneda original
+
+### 9. Personalización
 - Selección de moneda preferida en perfil
 - Categorías personalizadas
 - Perfil de usuario editable
 
-### 9. Sistema de Gamificación
+### 10. Sistema de Gamificación
 - **Sistema de Niveles y Experiencia (XP):**
-  - Gana XP por cada acción (transacciones, presupuestos, amigos, grupos)
+  - Gana XP por cada acción (transacciones, presupuestos, amigos, grupos, inversiones)
   - Sube de nivel automáticamente (Nivel 2 = 100 XP, Nivel 3 = 200 XP, etc.)
   - Barra de progreso visual con XP restante
   
-- **Logros Desbloqueables (30 total):**
+- **Logros Desbloqueables (48 total):**
   - **Hitos:** Primera transacción, 10 transacciones, 50, 100, 500, 1000
   - **Rachas:** 3 días consecutivos, 7, 15, 30, 60, 90 días
   - **Disciplina:** Cumplir presupuesto semanal/mensual, no exceder durante 3/6 meses
   - **Social:** Primer amigo, transferencia, 5/10 amigos, primer/décimo grupo
   - **Ahorros:** $1000, $5000, $10000, $50000, $100000 en ingresos totales
+  - **Inversiones (18 logros nuevos):**
+    - Primera inversión y diversificación (5, 10 inversiones)
+    - Por tipo específico (cripto, acciones, inmuebles)
+    - Por seguimiento (10, 50 valuaciones)
+    - Por rentabilidad (primera ganancia, 10%, 25%, 50%)
+    - Por inversiones cerradas (5, 10 cerradas)
+    - Por tamaño de portafolio ($100K, $500K, $1M)
   - Cada logro otorga XP adicional
   
 - **Sistema de Rachas:**
@@ -503,6 +582,14 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Actualización de racha automática al crear transacciones
   - Progreso de desafíos actualizado en tiempo real
   - Notificaciones toast al desbloquear logros
+  - Verificación de logros de inversiones al crear, actualizar y cerrar
+
+- **Sistema Dinámico de Categorías:**
+  - Categorías de logros cargadas dinámicamente desde la base de datos
+  - Filtros en frontend generados automáticamente
+  - Configuración visual centralizada en `CATEGORY_CONFIG` (íconos, colores, nombres)
+  - Escalable: agregar nuevas categorías solo requiere insertar en BD
+  - Sin código hardcodeado: permite extensibilidad futura (ej: desafíos personalizados)
 
 ## Flujo de Navegación
 
@@ -513,6 +600,7 @@ Landing (/)
   │         ├─> Movements (/movements)
   │         ├─> Add Transaction (/add-transaction)
   │         ├─> Budgets (/budgets)
+  │         ├─> Investments (/investments)
   │         ├─> Gamification (/gamification)
   │         ├─> Friends (/friends)
   │         ├─> Groups List (/groups)

@@ -18,6 +18,7 @@ export default function Sidebar({ expanded, setExpanded }) {
     { to: '/add-transaction', icon: 'bi-plus-circle', label: 'Nueva transacción' },
     { to: '/movements', icon: 'bi-list-ul', label: 'Movimientos' },
     { to: '/budgets', icon: 'bi-wallet2', label: 'Presupuestos' },
+    { to: '/investments', icon: 'bi-graph-up-arrow', label: 'Inversiones' },
     { to: '/gamification', icon: 'bi-trophy', label: 'Gamificación' },
     { to: '/friends', icon: 'bi-people', label: 'Amigos' },
     { to: '/groups', icon: 'bi-collection', label: 'Grupos' },
