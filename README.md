@@ -128,13 +128,14 @@ AppFinanzas/
 │   │   │   ├── AchievementNotification.jsx
 │   │   │   └── UserLevelBadge.jsx
 │   │   └── hooks/            # Custom hooks
-│   │       ├── useCurrency.js
+│   │       ├── useCurrency.js  # Hook para gestión de monedas
 │   │       └── useAchievementNotifications.js
 │   ├── public/               # Archivos estáticos
 │   └── vite.config.js        # Configuración de Vite
 ├── config/                    # Archivos de configuración (vacío actualmente)
 ├── db/                       # Scripts de base de datos
     ├── schema.sql            # Esquema completo de la base de datos
+    ├── currency_migration.sql # Migración del sistema de monedas
     ├── budgets_migration.sql # Migración de presupuestos y alertas
     └── gamification_migration.sql # Migración del sistema de gamificación
 ```
@@ -247,10 +248,13 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 
 ### Módulo de Usuarios
 - `users` - Información de usuarios registrados
-- `users_data` - Datos adicionales del perfil (username, biografía)
+- `users_data` - Datos adicionales del perfil (username, biografía, moneda preferida)
+  - `preferred_currency` VARCHAR(3) - Moneda favorita del usuario (por defecto: ARS)
 
 ### Módulo de Transacciones
-- `transactions` - Registro de ingresos y gastos personales
+- `transactions` - Registro de ingresos y gastos personales con soporte multi-moneda
+  - `currency_code` VARCHAR(3) - Código ISO de la moneda (ARS, USD, EUR, BRL)
+  - `currency_symbol` VARCHAR(5) - Símbolo de la moneda ($, US$, €, R$)
 - `categories` - Categorías personalizadas y predeterminadas
 
 ### Módulo de Amigos
@@ -279,7 +283,7 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 - `user_challenges` - Progreso de usuarios en desafíos
 - `user_levels` - Niveles y puntos de experiencia (XP)
 
-**Para ver el schema completo:** Consultar `db/schema.sql`, `db/budgets_migration.sql` y `db/gamification_migration.sql`
+**Para ver el schema completo:** Consultar `db/schema.sql`, `db/currency_migration.sql`, `db/budgets_migration.sql` y `db/gamification_migration.sql`
 
 ## API Endpoints
 
@@ -444,12 +448,23 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
 - Categorización emocional de transacciones
 - Visualizaciones y recomendaciones
 
-### 7. Personalización
-- Selección de moneda preferida
+### 7. Sistema Multi-Moneda
+- **Monedas Soportadas:** ARS (Peso argentino), USD (Dólar), EUR (Euro), BRL (Real brasileño)
+- **Moneda Preferida:** Configuración por usuario en el perfil
+- **Por Transacción:** Cada ingreso/gasto guarda su moneda original
+- **Visualización:**
+  - Símbolo de moneda junto al monto en todas las vistas
+  - Columna dedicada mostrando nombre completo de la moneda
+  - Selector de moneda en formulario de nueva transacción
+- **Compatibilidad:** Transacciones antiguas sin moneda muestran la moneda preferida del usuario
+- **Alcance:** Solo transacciones personales (grupos y transferencias usan moneda única)
+
+### 8. Personalización
+- Selección de moneda preferida en perfil
 - Categorías personalizadas
 - Perfil de usuario editable
 
-### 8. Sistema de Gamificación
+### 9. Sistema de Gamificación
 - **Sistema de Niveles y Experiencia (XP):**
   - Gana XP por cada acción (transacciones, presupuestos, amigos, grupos)
   - Sube de nivel automáticamente (Nivel 2 = 100 XP, Nivel 3 = 200 XP, etc.)
