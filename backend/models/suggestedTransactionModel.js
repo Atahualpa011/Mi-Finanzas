@@ -27,8 +27,27 @@ async function updateSuggestionStatus(id, status) {
   );
 }
 
+// --- Crea una alerta emocional personalizada (NUEVO) ---
+async function createEmotionalAlert({ userId, emotion, alertType, description, actionRecommendation }) {
+  await pool.execute(
+    `INSERT INTO suggested_transactions
+      (user_id, type, amount, description, related_user_id, group_expense_id)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      null, // group_id no aplica para alertas emocionales
+      'emotional_warning', // Tipo especial para alertas emocionales
+      0, // amount = 0 para alertas (no es una transacción monetaria)
+      JSON.stringify({ emotion, alertType, message: description, action: actionRecommendation }),
+      null, // related_user_id no aplica
+      null  // group_expense_id no aplica
+    ]
+  );
+}
+
 module.exports = {
   createSuggestion,
   getPendingSuggestions,
   updateSuggestionStatus,
+  createEmotionalAlert,
 };

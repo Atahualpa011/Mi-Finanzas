@@ -137,6 +137,30 @@ async function getRecentEmotionalExpenses(userId, daysBack = 30) {
   return rows;
 }
 
+// --- Obtiene tendencias temporales para gráfico de línea ---
+async function getEmotionalTrends(userId, weeksBack = 12) {
+  const [rows] = await pool.execute(
+    `SELECT 
+       DATE_FORMAT(t.date, '%Y-%m-%d') as week_start,
+       YEARWEEK(t.date, 1) as year_week,
+       e.emotion,
+       SUM(t.amount) as total_amount,
+       COUNT(*) as transaction_count
+     FROM transactions t
+     JOIN expenses e ON e.transaction_id = t.id
+     WHERE t.user_id = ? 
+       AND t.type = 'expense' 
+       AND e.emotion IS NOT NULL 
+       AND e.emotion != ''
+       AND t.date >= DATE_SUB(CURDATE(), INTERVAL ? WEEK)
+     GROUP BY year_week, e.emotion, week_start
+     ORDER BY year_week ASC`,
+    [userId, weeksBack]
+  );
+
+  return rows;
+}
+
 module.exports = {
   getCorrelationalData,
   getTotalExpenses,
@@ -144,4 +168,5 @@ module.exports = {
   getDayOfWeekPatterns,
   getMonthlyComparison,
   getRecentEmotionalExpenses,
+  getEmotionalTrends,
 };

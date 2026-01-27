@@ -8,7 +8,15 @@ export default function Movements() {
   const [message, setMessage] = useState(null);
   const [modalIndex, setModalIndex] = useState(null); // Índice de la sugerencia seleccionada
   const [autoModalShown, setAutoModalShown] = useState(false);
+  const [emotionFilter, setEmotionFilter] = useState('all'); // Filtro de emoción (NUEVO)
   const { currencyData, CURRENCIES } = useCurrency();     // Hook para obtener símbolo y lista de monedas
+
+  // --- Lista de emociones disponibles (NUEVO) ---
+  const EMOTIONS = [
+    'Felicidad', 'Alivio', 'Orgullo', 'Generosidad/Amor', 'Emocion/Entusiasmo',
+    'Culpa', 'Ansiedad/Estres', 'Arrepentimiento', 'Frustracion', 'Verguenza',
+    'Indiferencia', 'Ambivalencia'
+  ];
 
   // --- Cargar movimientos y sugerencias al montar ---
   useEffect(() => {
@@ -38,6 +46,26 @@ export default function Movements() {
     fetch('/api/transactions', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(setTransactions);
+  };
+
+  // --- Función para filtrar transacciones por emoción (NUEVO) ---
+  const filterByEmotion = (txList) => {
+    if (emotionFilter === 'all') return txList;
+    
+    if (emotionFilter === 'with_emotion') {
+      return txList.filter(tx => tx.emotion && tx.emotion.trim() !== '');
+    }
+    
+    if (emotionFilter === 'without_emotion') {
+      return txList.filter(tx => !tx.emotion || tx.emotion.trim() === '');
+    }
+    
+    // Filtrar por emoción específica
+    return txList.filter(tx => {
+      if (!tx.emotion) return false;
+      const emotions = tx.emotion.split(',').map(e => e.trim());
+      return emotions.includes(emotionFilter);
+    });
   };
 
   // --- Eliminar movimiento ---
@@ -138,8 +166,107 @@ export default function Movements() {
         </div>
       )}
 
-        {/* Sugerencias pendientes */}
-        {suggestions.length > 0 && (
+        {/* Alertas emocionales (NUEVO) */}
+        {suggestions.filter(s => s.type === 'emotional_warning').length > 0 && (
+          <div 
+            className="alert"
+            style={{
+              backgroundColor: '#f8f0ff',
+              border: '2px solid #6f42c1',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--spacing-lg)',
+              marginBottom: 'var(--spacing-lg)'
+            }}
+          >
+            <h5 
+              className="mb-3"
+              style={{
+                fontWeight: '600',
+                color: '#6f42c1',
+                fontSize: '1.1rem'
+              }}
+            >
+              <i className="bi bi-emoji-smile me-2"></i>
+              Alertas de Salud Emocional
+            </h5>
+            <ul className="list-group mb-3">
+              {suggestions.filter(s => s.type === 'emotional_warning').map((s, i) => {
+                let alertData = {};
+                try {
+                  alertData = JSON.parse(s.description);
+                } catch (e) {
+                  alertData = { message: s.description, action: 'Ver detalles' };
+                }
+                
+                return (
+                  <li 
+                    key={s.id} 
+                    className="list-group-item"
+                    style={{
+                      border: '1px solid #e0d4f0',
+                      borderRadius: 'var(--radius-md)',
+                      marginBottom: 'var(--spacing-xs)',
+                      backgroundColor: 'white',
+                      padding: 'var(--spacing-md)'
+                    }}
+                  >
+                    <div className="d-flex align-items-start">
+                      <div className="flex-shrink-0 me-3">
+                        <span className="badge bg-purple" style={{ fontSize: '0.9rem', padding: '0.5rem 0.75rem' }}>
+                          {alertData.emotion || 'Alerta'}
+                        </span>
+                      </div>
+                      <div className="flex-grow-1">
+                        <p className="mb-2 fw-semibold" style={{ color: 'var(--text-primary)' }}>
+                          {alertData.message}
+                        </p>
+                        <p className="mb-3 small" style={{ color: 'var(--text-secondary)' }}>
+                          <i className="bi bi-lightbulb me-1"></i>
+                          Acción recomendada: {alertData.action}
+                        </p>
+                        <div className="d-flex gap-2">
+                          <a
+                            href="/budgets"
+                            className="btn btn-sm"
+                            style={{
+                              backgroundColor: '#6f42c1',
+                              color: 'white',
+                              border: 'none',
+                              padding: '0.375rem 1rem',
+                              fontSize: '0.875rem',
+                              fontWeight: '500'
+                            }}
+                          >
+                            <i className="bi bi-wallet2 me-1"></i>
+                            Crear presupuesto emocional
+                          </a>
+                          <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => handleReject(s.id)}
+                            style={{
+                              padding: '0.375rem 1rem',
+                              fontSize: '0.875rem'
+                            }}
+                          >
+                            <i className="bi bi-x me-1"></i>
+                            Descartar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <small style={{ color: '#6f42c1' }}>
+              <i className="bi bi-info-circle me-1"></i>
+              Estas alertas se generan automáticamente basándose en tus patrones de gastos emocionales.
+            </small>
+          </div>
+        )}
+
+        {/* Sugerencias pendientes (MODIFICADO) */}
+        {suggestions.filter(s => s.type !== 'emotional_warning').length > 0 && (
           <div 
             className="alert"
             style={{
@@ -162,7 +289,7 @@ export default function Movements() {
               Movimientos sugeridos de grupos
             </h5>
             <ul className="list-group mb-3">
-              {suggestions.map((s, i) => (
+              {suggestions.filter(s => s.type !== 'emotional_warning').map((s, i) => (
                 <li 
                   key={s.id} 
                   className="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center"
@@ -421,6 +548,59 @@ export default function Movements() {
           </div>
         )}
 
+        {/* Filtro por emoción (NUEVO) */}
+        <div className="card mb-4" style={{
+          backgroundColor: 'var(--bg-primary)',
+          border: '1px solid var(--border-light)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 'var(--spacing-md)'
+        }}>
+          <div className="row align-items-center g-3">
+            <div className="col-auto">
+              <i className="bi bi-emoji-smile fs-5" style={{ color: '#6f42c1' }}></i>
+            </div>
+            <div className="col-auto">
+              <label className="mb-0 fw-semibold" style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>
+                Filtrar por emoción:
+              </label>
+            </div>
+            <div className="col-md-4">
+              <select
+                className="form-select"
+                value={emotionFilter}
+                onChange={(e) => setEmotionFilter(e.target.value)}
+                style={{
+                  borderColor: 'var(--border-light)',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <option value="all">Todas las emociones</option>
+                <option value="with_emotion">Con emoción registrada</option>
+                <option value="without_emotion">Sin emoción registrada</option>
+                <optgroup label="Emociones específicas">
+                  {EMOTIONS.map(emotion => (
+                    <option key={emotion} value={emotion}>{emotion}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </div>
+            {emotionFilter !== 'all' && (
+              <div className="col-auto">
+                <button
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setEmotionFilter('all')}
+                  style={{ fontSize: '0.875rem' }}
+                >
+                  <i className="bi bi-x me-1"></i>
+                  Limpiar filtro
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="row g-4">
           {/* Tabla de gastos */}
           <div className="col-md-6">
@@ -445,8 +625,15 @@ export default function Movements() {
               >
                 <i className="bi bi-arrow-down-circle me-2"></i>
                 Gastos
+                {emotionFilter !== 'all' && (
+                  <span className="ms-2 badge bg-purple" style={{ fontSize: '0.75rem', fontWeight: '500' }}>
+                    {emotionFilter === 'with_emotion' ? 'Con emoción' : 
+                     emotionFilter === 'without_emotion' ? 'Sin emoción' : 
+                     emotionFilter}
+                  </span>
+                )}
               </h4>
-              {transactions.filter(tx => tx.type === 'expense').length === 0 ? (
+              {filterByEmotion(transactions.filter(tx => tx.type === 'expense')).length === 0 ? (
                 <div 
                   className="text-center py-5"
                   style={{
@@ -457,7 +644,7 @@ export default function Movements() {
                 >
                   <i className="bi bi-inbox" style={{ fontSize: '3rem', color: 'var(--text-muted)' }}></i>
                   <p className="mt-3 mb-0" style={{ color: 'var(--text-secondary)' }}>
-                    No hay gastos registrados.
+                    {emotionFilter !== 'all' ? 'No hay gastos con este filtro.' : 'No hay gastos registrados.'}
                   </p>
                 </div>
               ) : (
@@ -470,11 +657,12 @@ export default function Movements() {
                         <th>Fecha</th>
                         <th>Categoría</th>
                         <th>Descripción</th>
+                        {emotionFilter === 'all' && <th>Emoción</th>}
                         <th></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {transactions.filter(tx => tx.type === 'expense').map(tx => (
+                      {filterByEmotion(transactions.filter(tx => tx.type === 'expense')).map(tx => (
                         <tr key={tx.id}>
                           <td style={{ fontWeight: '600', color: 'var(--danger)' }}>
                             {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
@@ -491,6 +679,17 @@ export default function Movements() {
                           <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                             {tx.description || '-'}
                           </td>
+                          {emotionFilter === 'all' && (
+                            <td>
+                              {tx.emotion ? (
+                                <span className="badge bg-purple" style={{ fontSize: '0.7rem' }}>
+                                  {tx.emotion.split(',').map(e => e.trim()).join(', ')}
+                                </span>
+                              ) : (
+                                <span className="text-muted" style={{ fontSize: '0.75rem' }}>-</span>
+                              )}
+                            </td>
+                          )}
                           <td>
                             <button
                               className="btn btn-sm"

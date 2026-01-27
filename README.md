@@ -140,7 +140,9 @@ AppFinanzas/
     ├── gamification_migration.sql # Migración del sistema de gamificación
     ├── investments_migration.sql # Migración del sistema de inversiones
     ├── investments_achievements.sql # Logros de inversiones
-    └── emotional_achievements.sql # Logros emocionales
+    ├── emotional_achievements.sql # Logros emocionales
+    ├── emotional_warnings_migration.sql # Soporte para alertas emocionales
+    └── emotional_budgets_migration.sql # Presupuestos emocionales
 ```
 
 ## Configuración e Instalación
@@ -366,6 +368,7 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 - `GET /api/analysis/emotional` - Obtener análisis emocional básico de gastos
 - `GET /api/analysis/correlational` - Obtener análisis correlacional detallado (promedio, frecuencia, tendencias)
 - `GET /api/analysis/emotional-recommendations` - Obtener recomendaciones personalizadas basadas en patrones emocionales
+- `GET /api/analysis/emotional-trends` - Obtener tendencias temporales de gastos emocionales (datos para gráfico de línea)
 
 ### Transacciones Sugeridas
 - `GET /api/suggested-transactions` - Listar sugerencias pendientes
@@ -493,6 +496,7 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Tarjetas de métricas clave (emoción más cara, más frecuente, riesgo, balance)
   - Gráfico de torta (distribución de gastos)
   - Gráfico de barras comparativo (gasto promedio por emoción)
+  - Gráfico de línea temporal (evolución semanal de gastos por emoción)
   - Tabla detallada con correlaciones y tendencias
   - Códigos de color según tipo de emoción
   
@@ -503,14 +507,20 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Recomendaciones personalizadas según balance emocional
   - Sugerencias de acciones concretas con beneficios explicados
   - Widget de recomendaciones en Dashboard
+  - Alertas emocionales integradas en sistema de sugerencias
+  
+- **Filtros y Control:**
+  - Filtro por emoción en página de Movimientos
+  - Opción de ver solo gastos con/sin emoción registrada
+  - Filtro por emoción específica (12 emociones disponibles)
+  - Columna de emoción visible en tablas de movimientos
+  - Presupuestos emocionales (límites por emoción específica)
   
 - **Integración con Gamificación:**
   - 8 logros exclusivos de control emocional
   - Verificación automática al registrar gastos con emociones
   - Progreso dinámico visible en tarjetas de logros
-  - Logros por conciencia emocional, control y equilibrio los gastos
-- Categorización emocional de transacciones
-- Visualizaciones y recomendaciones
+  - Logros por conciencia emocional, control y equilibrio
 
 ### 7. Sistema Multi-Moneda
 - **Monedas Soportadas:** ARS (Peso argentino), USD (Dólar), EUR (Euro), BRL (Real brasileño)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pie, Bar } from 'react-chartjs-2';
+import { Pie, Bar, Line } from 'react-chartjs-2';
 
 // --- Página de análisis emocional de gastos (REFACTORIZADO) ---
 export default function EmotionalAnalysis() {
@@ -8,6 +8,7 @@ export default function EmotionalAnalysis() {
   const [separated, setSeparated] = useState({ positive: [], negative: [], neutral: [], other: [] }); // Gastos separados
   const [correlational, setCorrelational] = useState(null); // Datos correlacionales (NUEVO)
   const [recommendations, setRecommendations] = useState(null); // Recomendaciones (NUEVO)
+  const [trends, setTrends] = useState(null); // Tendencias temporales (NUEVO)
   const [loading, setLoading] = useState(true);
 
   // --- Cargar datos de análisis emocional al montar ---
@@ -18,13 +19,15 @@ export default function EmotionalAnalysis() {
     Promise.all([
       fetch('/api/analysis/emotional', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
       fetch('/api/analysis/correlational', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/analysis/emotional-recommendations', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
+      fetch('/api/analysis/emotional-recommendations', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch('/api/analysis/emotional-trends?weeks=12', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
     ])
-      .then(([basicData, correlData, recomData]) => {
+      .then(([basicData, correlData, recomData, trendsData]) => {
         setEmotionStats(basicData.emotionStats);
         setSeparated(basicData.separated);
         setCorrelational(correlData);
         setRecommendations(recomData);
+        setTrends(trendsData);
         setLoading(false);
       })
       .catch(err => {
@@ -102,6 +105,70 @@ export default function EmotionalAnalysis() {
           callback: (value) => `$${value.toLocaleString()}`
         }
       }
+    }
+  };
+
+  // --- Datos para el gráfico de línea de tendencias (NUEVO) ---
+  const lineData = trends && trends.datasets.length > 0 ? {
+    labels: trends.labels,
+    datasets: trends.datasets.map(dataset => {
+      // Asignar colores según el tipo de emoción
+      const emotionType = dataset.type;
+      let color = '#6c757d'; // Neutral por defecto
+      
+      if (emotionType === 'positive') color = '#198754'; // Verde
+      else if (emotionType === 'negative') color = '#dc3545'; // Rojo
+      
+      return {
+        label: dataset.label,
+        data: dataset.data,
+        borderColor: color,
+        backgroundColor: `${color}33`, // Color con transparencia
+        tension: 0.3, // Línea suave
+        fill: false,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      };
+    })
+  } : null;
+
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          padding: 15,
+          font: { size: 11 },
+          usePointStyle: true
+        }
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        callbacks: {
+          label: (context) => `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false
+        }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: (value) => `$${value.toLocaleString()}`
+        }
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
     }
   };
 
@@ -313,6 +380,30 @@ export default function EmotionalAnalysis() {
               </div>
             </div>
           </div>
+
+          {/* SECCIÓN 3.5: GRÁFICO DE TENDENCIAS TEMPORALES (NUEVO) */}
+          {trends && trends.datasets.length > 0 && (
+            <div className="card border-light shadow-sm mb-4">
+              <div className="card-header bg-secondary border-0 d-flex align-items-center justify-content-between" style={{ borderRadius: 'var(--border-radius-lg) var(--border-radius-lg) 0 0' }}>
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-graph-up me-2"></i>
+                  <span className="fw-semibold">Tendencia temporal de gastos emocionales</span>
+                </div>
+                <span className="badge bg-light text-dark">
+                  Últimas {trends.metadata.totalWeeks} semanas
+                </span>
+              </div>
+              <div className="card-body" style={{ padding: '2rem', height: '450px' }}>
+                {lineData && <Line data={lineData} options={lineOptions} />}
+              </div>
+              <div className="card-footer bg-light border-0">
+                <small className="text-muted">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Este gráfico muestra cómo evolucionan tus gastos asociados a cada emoción semana a semana
+                </small>
+              </div>
+            </div>
+          )}
 
           {/* SECCIÓN 4: TABLA DE CORRELACIONES (NUEVO) */}
           <div className="card border-light shadow-sm mb-4">

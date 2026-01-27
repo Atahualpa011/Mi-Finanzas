@@ -22,4 +22,10 @@ router.get('/emotional-recommendations', authenticate, analysisController.emotio
 // - Genera alertas personalizadas (incrementos en emociones negativas, patrones de días)
 // - Proporciona recomendaciones concretas para mejorar salud financiera-emocional
 
+// --- Ruta para obtener tendencias temporales de emociones ---
+// GET /api/analysis/emotional-trends
+router.get('/emotional-trends', authenticate, analysisController.emotionalTrends);
+// - Devuelve datos procesados para gráfico de línea (evolución semanal de gastos por emoción)
+// - Acepta parámetro ?weeks=N para configurar el rango temporal (default: 12)
+
 module.exports = router; // Exporta el router para ser usado en server.js

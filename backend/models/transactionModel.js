@@ -2,7 +2,7 @@ const pool = require('../db'); // Importa la conexión a la base de datos
 
 // --- Trae todas las transacciones del usuario autenticado ---
 async function getAllByUser(userId) {
-  // Consulta SQL: obtiene todas las transacciones del usuario, con su categoría y moneda
+  // Consulta SQL: obtiene todas las transacciones del usuario, con su categoría, moneda y emoción
   const [rows] = await pool.execute(
     `SELECT
        t.id,
@@ -12,9 +12,12 @@ async function getAllByUser(userId) {
        t.currency_code,
        t.currency_symbol,
        c.name    AS category,
-       t.description
+       t.description,
+       e.emotion,
+       e.destination
      FROM transactions t
      LEFT JOIN categories c ON t.category_id = c.id
+     LEFT JOIN expenses e ON e.transaction_id = t.id AND t.type = 'expense'
      WHERE t.user_id = ?
      ORDER BY t.date DESC, t.time DESC`,
     [userId]

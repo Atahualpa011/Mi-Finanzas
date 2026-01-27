@@ -409,3 +409,90 @@ exports.emotionalRecommendations = async (req, res) => {
     res.status(500).json({ error: 'Error al generar recomendaciones emocionales' });
   }
 };
+
+// --- Nuevo endpoint: tendencias temporales para gráfico de línea ---
+exports.emotionalTrends = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const weeksBack = parseInt(req.query.weeks) || 12;
+
+    // Obtener tendencias temporales
+    const trendsData = await emotionalAnalysisModel.getEmotionalTrends(userId, weeksBack);
+
+    // Procesar datos para formato Chart.js
+    const emotionsByWeek = {};
+    const allEmotions = new Set();
+    const weekLabels = new Set();
+
+    // Primera pasada: identificar todas las emociones y semanas
+    for (const row of trendsData) {
+      const emotions = row.emotion.split(',').map(e => e.trim());
+      
+      for (const emotion of emotions) {
+        if (!emotion) continue;
+        allEmotions.add(emotion);
+        weekLabels.add(row.year_week);
+        
+        const weekKey = row.year_week;
+        if (!emotionsByWeek[weekKey]) {
+          emotionsByWeek[weekKey] = {
+            weekStart: row.week_start,
+            yearWeek: row.year_week,
+            emotions: {}
+          };
+        }
+        
+        if (!emotionsByWeek[weekKey].emotions[emotion]) {
+          emotionsByWeek[weekKey].emotions[emotion] = {
+            total: 0,
+            count: 0
+          };
+        }
+        
+        emotionsByWeek[weekKey].emotions[emotion].total += parseFloat(row.total_amount);
+        emotionsByWeek[weekKey].emotions[emotion].count += parseInt(row.transaction_count);
+      }
+    }
+
+    // Convertir a array ordenado
+    const sortedWeeks = Array.from(weekLabels).sort();
+    const emotionsArray = Array.from(allEmotions);
+
+    // Construir datasets para Chart.js
+    const datasets = emotionsArray.map(emotion => {
+      const data = sortedWeeks.map(week => {
+        return emotionsByWeek[week]?.emotions[emotion]?.total || 0;
+      });
+
+      return {
+        label: emotion,
+        data: data,
+        emotion: emotion,
+        type: getEmotionType(emotion)
+      };
+    });
+
+    // Generar etiquetas legibles para las semanas
+    const labels = sortedWeeks.map(week => {
+      const year = Math.floor(week / 100);
+      const weekNum = week % 100;
+      return `Sem ${weekNum}/${year}`;
+    });
+
+    res.json({
+      labels,
+      datasets,
+      metadata: {
+        totalWeeks: sortedWeeks.length,
+        totalEmotions: emotionsArray.length,
+        dateRange: {
+          from: trendsData.length > 0 ? trendsData[trendsData.length - 1].week_start : null,
+          to: trendsData.length > 0 ? trendsData[0].week_start : null
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error en tendencias emocionales:', error);
+    res.status(500).json({ error: 'Error al obtener tendencias emocionales' });
+  }
+};
