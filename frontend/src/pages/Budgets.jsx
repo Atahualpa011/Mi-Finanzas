@@ -18,8 +18,17 @@ export default function Budgets() {
     period: 'monthly',
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
-    alertThreshold: 80
+    alertThreshold: 80,
+    isEmotional: false,
+    emotionFilter: ''
   });
+
+  // Lista de emociones disponibles (NUEVO)
+  const EMOTIONS = [
+    'Felicidad', 'Alivio', 'Orgullo', 'Generosidad/Amor', 'Emocion/Entusiasmo',
+    'Culpa', 'Ansiedad/Estres', 'Arrepentimiento', 'Frustracion', 'Verguenza',
+    'Indiferencia', 'Ambivalencia'
+  ];
 
   // Cargar presupuestos y categorías
   useEffect(() => {
@@ -59,7 +68,18 @@ export default function Budgets() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.categoryId || !formData.amount || !formData.startDate) {
+    // Validaciones según tipo de presupuesto
+    if (formData.isEmotional && !formData.emotionFilter) {
+      alert('Por favor selecciona una emoción para el presupuesto emocional');
+      return;
+    }
+    
+    if (!formData.isEmotional && !formData.categoryId) {
+      alert('Por favor selecciona una categoría para el presupuesto normal');
+      return;
+    }
+    
+    if (!formData.amount || !formData.startDate) {
       alert('Por favor completa todos los campos requeridos');
       return;
     }
@@ -124,12 +144,14 @@ export default function Budgets() {
   const handleEdit = (budget) => {
     setEditingBudget(budget);
     setFormData({
-      categoryId: budget.category_id,
+      categoryId: budget.category_id || '',
       amount: budget.budget_amount,
       period: budget.period,
       startDate: budget.start_date,
       endDate: budget.end_date || '',
-      alertThreshold: budget.alert_threshold
+      alertThreshold: budget.alert_threshold,
+      isEmotional: budget.is_emotional || false,
+      emotionFilter: budget.emotion_filter || ''
     });
     setShowModal(true);
   };
@@ -141,7 +163,9 @@ export default function Budgets() {
       period: 'monthly',
       startDate: new Date().toISOString().split('T')[0],
       endDate: '',
-      alertThreshold: 80
+      alertThreshold: 80,
+      isEmotional: false,
+      emotionFilter: ''
     });
     setEditingBudget(null);
   };
@@ -281,19 +305,35 @@ export default function Budgets() {
                   }}
                 >
                   <div>
-                    <span 
-                      className="badge rounded-pill me-2" 
-                      style={{ 
-                        backgroundColor: budget.category_color || '#6c757d',
-                        color: 'white',
-                        padding: '0.375rem 0.875rem',
-                        fontSize: '0.8rem',
-                        fontWeight: '600'
-                      }}
-                    >
-                      <i className="bi bi-tag-fill me-1"></i>
-                      {budget.category_name}
-                    </span>
+                    {budget.is_emotional ? (
+                      <span 
+                        className="badge rounded-pill me-2" 
+                        style={{ 
+                          backgroundColor: '#6f42c1',
+                          color: 'white',
+                          padding: '0.375rem 0.875rem',
+                          fontSize: '0.8rem',
+                          fontWeight: '600'
+                        }}
+                      >
+                        <i className="bi bi-emoji-smile-fill me-1"></i>
+                        {budget.emotion_filter}
+                      </span>
+                    ) : (
+                      <span 
+                        className="badge rounded-pill me-2" 
+                        style={{ 
+                          backgroundColor: budget.category_color || '#6c757d',
+                          color: 'white',
+                          padding: '0.375rem 0.875rem',
+                          fontSize: '0.8rem',
+                          fontWeight: '600'
+                        }}
+                      >
+                        <i className="bi bi-tag-fill me-1"></i>
+                        {budget.category_name}
+                      </span>
+                    )}
                     <span 
                       className="badge"
                       style={{
@@ -541,41 +581,120 @@ export default function Budgets() {
                 </div>
                 <form onSubmit={handleSubmit}>
                   <div className="modal-body" style={{ padding: 'var(--spacing-lg)' }}>
-                    {/* Categoría */}
+                    {/* Tipo de presupuesto (NUEVO) */}
                     <div className="mb-3">
-                      <label 
-                        className="form-label" 
-                        style={{ 
-                          fontWeight: '600', 
-                          color: 'var(--text-primary)', 
-                          fontSize: '0.875rem',
-                          marginBottom: 'var(--spacing-xs)'
-                        }}
-                      >
-                        <i className="bi bi-tag me-1"></i>
-                        Categoría <span style={{ color: 'var(--danger)' }}>*</span>
-                      </label>
-                      <select 
-                        className="form-select"
-                        style={{
-                          border: '1px solid var(--border-light)',
-                          borderRadius: 'var(--radius-md)',
-                          padding: 'var(--spacing-sm) var(--spacing-md)',
-                          backgroundColor: 'var(--bg-secondary)',
-                          color: 'var(--text-primary)',
-                          fontSize: '0.95rem',
-                          transition: 'all var(--transition-fast)'
-                        }}
-                        value={formData.categoryId}
-                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                        required
-                      >
-                        <option value="">Selecciona una categoría</option>
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                      </select>
+                      <div className="form-check" style={{ padding: 'var(--spacing-sm)' }}>
+                        <input 
+                          className="form-check-input" 
+                          type="checkbox" 
+                          id="isEmotionalCheck"
+                          checked={formData.isEmotional}
+                          onChange={(e) => setFormData({ 
+                            ...formData, 
+                            isEmotional: e.target.checked,
+                            categoryId: e.target.checked ? '' : formData.categoryId,
+                            emotionFilter: e.target.checked ? formData.emotionFilter : ''
+                          })}
+                          style={{ cursor: 'pointer' }}
+                        />
+                        <label 
+                          className="form-check-label" 
+                          htmlFor="isEmotionalCheck"
+                          style={{ 
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.95rem'
+                          }}
+                        >
+                          <i className="bi bi-emoji-smile me-2" style={{ color: '#6f42c1' }}></i>
+                          Presupuesto Emocional
+                        </label>
+                        <small className="form-text d-block ms-4" style={{ color: 'var(--text-secondary)' }}>
+                          Controla gastos asociados a una emoción específica (ej: Ansiedad/Estrés)
+                        </small>
+                      </div>
                     </div>
+
+                    {/* Selector de emoción (solo si es emocional) */}
+                    {formData.isEmotional && (
+                      <div className="mb-3">
+                        <label 
+                          className="form-label" 
+                          style={{ 
+                            fontWeight: '600', 
+                            color: 'var(--text-primary)', 
+                            fontSize: '0.875rem',
+                            marginBottom: 'var(--spacing-xs)'
+                          }}
+                        >
+                          <i className="bi bi-emoji-smile me-1" style={{ color: '#6f42c1' }}></i>
+                          Emoción a Controlar <span style={{ color: 'var(--danger)' }}>*</span>
+                        </label>
+                        <select 
+                          className="form-select"
+                          style={{
+                            border: '2px solid #6f42c1',
+                            borderRadius: 'var(--radius-md)',
+                            padding: 'var(--spacing-sm) var(--spacing-md)',
+                            backgroundColor: '#f8f0ff',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.95rem',
+                            transition: 'all var(--transition-fast)'
+                          }}
+                          value={formData.emotionFilter}
+                          onChange={(e) => setFormData({ ...formData, emotionFilter: e.target.value })}
+                          required={formData.isEmotional}
+                        >
+                          <option value="">Selecciona una emoción</option>
+                          {EMOTIONS.map(emotion => (
+                            <option key={emotion} value={emotion}>{emotion}</option>
+                          ))}
+                        </select>
+                        <small className="form-text" style={{ color: '#6f42c1' }}>
+                          <i className="bi bi-info-circle me-1"></i>
+                          Solo se contarán gastos con esta emoción registrada
+                        </small>
+                      </div>
+                    )}
+
+                    {/* Categoría (solo si NO es emocional) */}
+                    {!formData.isEmotional && (
+                      <div className="mb-3">
+                        <label 
+                          className="form-label" 
+                          style={{ 
+                            fontWeight: '600', 
+                            color: 'var(--text-primary)', 
+                            fontSize: '0.875rem',
+                            marginBottom: 'var(--spacing-xs)'
+                          }}
+                        >
+                          <i className="bi bi-tag me-1"></i>
+                          Categoría <span style={{ color: 'var(--danger)' }}>*</span>
+                        </label>
+                        <select 
+                          className="form-select"
+                          style={{
+                            border: '1px solid var(--border-light)',
+                            borderRadius: 'var(--radius-md)',
+                            padding: 'var(--spacing-sm) var(--spacing-md)',
+                            backgroundColor: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.95rem',
+                            transition: 'all var(--transition-fast)'
+                          }}
+                          value={formData.categoryId}
+                          onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                          required={!formData.isEmotional}
+                        >
+                          <option value="">Selecciona una categoría</option>
+                          {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
                     {/* Monto */}
                     <div className="mb-3">

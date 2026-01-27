@@ -17,10 +17,12 @@ async function getUserBudgets(userId) {
       b.end_date,
       b.alert_threshold,
       b.is_active,
+      b.emotion_filter,
+      b.is_emotional,
       b.created_at,
       b.updated_at
     FROM budgets b
-    INNER JOIN categories c ON b.category_id = c.id
+    LEFT JOIN categories c ON b.category_id = c.id
     WHERE b.user_id = ? AND b.is_active = TRUE
     ORDER BY b.created_at DESC
   `, [userId]);
@@ -41,25 +43,27 @@ async function getBudgetById(budgetId, userId) {
       b.start_date,
       b.end_date,
       b.alert_threshold,
-      b.is_active
+      b.is_active,
+      b.emotion_filter,
+      b.is_emotional
     FROM budgets b
-    INNER JOIN categories c ON b.category_id = c.id
+    LEFT JOIN categories c ON b.category_id = c.id
     WHERE b.id = ? AND b.user_id = ?
   `, [budgetId, userId]);
   return rows[0];
 }
 
 // Crear presupuesto
-async function createBudget(userId, categoryId, amount, period, startDate, endDate, alertThreshold = 80) {
+async function createBudget(userId, categoryId, amount, period, startDate, endDate, alertThreshold = 80, emotionFilter = null, isEmotional = false) {
   const [result] = await db.query(`
-    INSERT INTO budgets (user_id, category_id, amount, period, start_date, end_date, alert_threshold)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `, [userId, categoryId, amount, period, startDate, endDate, alertThreshold]);
+    INSERT INTO budgets (user_id, category_id, amount, period, start_date, end_date, alert_threshold, emotion_filter, is_emotional)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [userId, categoryId, amount, period, startDate, endDate, alertThreshold, emotionFilter, isEmotional]);
   return result.insertId;
 }
 
 // Actualizar presupuesto
-async function updateBudget(budgetId, userId, { categoryId, amount, period, startDate, endDate, alertThreshold, isActive }) {
+async function updateBudget(budgetId, userId, { categoryId, amount, period, startDate, endDate, alertThreshold, isActive, emotionFilter, isEmotional }) {
   const updates = [];
   const values = [];
   
@@ -70,6 +74,8 @@ async function updateBudget(budgetId, userId, { categoryId, amount, period, star
   if (endDate !== undefined) { updates.push('end_date = ?'); values.push(endDate); }
   if (alertThreshold !== undefined) { updates.push('alert_threshold = ?'); values.push(alertThreshold); }
   if (isActive !== undefined) { updates.push('is_active = ?'); values.push(isActive); }
+  if (emotionFilter !== undefined) { updates.push('emotion_filter = ?'); values.push(emotionFilter); }
+  if (isEmotional !== undefined) { updates.push('is_emotional = ?'); values.push(isEmotional); }
   
   if (updates.length === 0) return false;
   
@@ -90,7 +96,38 @@ async function deleteBudget(budgetId, userId) {
 }
 
 // Obtener gastos del presupuesto en el período actual
-async function getBudgetExpenses(userId, categoryId, startDate, endDate) {
+async function getBudgetExpenses(userId, categoryId, startDate, endDate, emotionFilter = null) {
+  // Si es un presupuesto emocional, filtrar por emoción
+  if (emotionFilter) {
+    const [rows] = await db.query(`
+      SELECT 
+        SUM(t.amount) AS total_spent,
+        COUNT(*) AS transaction_count
+      FROM transactions t
+      JOIN expenses e ON e.transaction_id = t.id
+      WHERE t.user_id = ? 
+        AND t.type = 'expense'
+        AND t.date >= ? 
+        AND (? IS NULL OR t.date <= ?)
+        AND e.emotion IS NOT NULL
+        AND (
+          e.emotion = ? 
+          OR e.emotion LIKE CONCAT(?, ',%')
+          OR e.emotion LIKE CONCAT('%,', ?)
+          OR e.emotion LIKE CONCAT('%,', ?, ',%')
+        )
+        ${categoryId ? 'AND t.category_id = ?' : ''}
+    `, categoryId 
+      ? [userId, startDate, endDate, endDate, emotionFilter, emotionFilter, emotionFilter, emotionFilter, categoryId]
+      : [userId, startDate, endDate, endDate, emotionFilter, emotionFilter, emotionFilter, emotionFilter]
+    );
+    return {
+      totalSpent: rows[0]?.total_spent || 0,
+      transactionCount: rows[0]?.transaction_count || 0
+    };
+  }
+  
+  // Presupuesto normal por categoría
   const [rows] = await db.query(`
     SELECT 
       SUM(amount) AS total_spent,
@@ -117,7 +154,8 @@ async function getBudgetsWithProgress(userId) {
       userId,
       budget.category_id,
       budget.start_date,
-      budget.end_date
+      budget.end_date,
+      budget.emotion_filter  // Pasar el filtro emocional
     );
     
     const percentageUsed = budget.budget_amount > 0 

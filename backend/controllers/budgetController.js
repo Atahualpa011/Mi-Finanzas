@@ -29,7 +29,8 @@ async function getBudget(req, res) {
       userId,
       budget.category_id,
       budget.start_date,
-      budget.end_date
+      budget.end_date,
+      budget.emotion_filter  // Pasar el filtro emocional
     );
     
     const percentageUsed = budget.budget_amount > 0 
@@ -54,11 +55,16 @@ async function getBudget(req, res) {
 async function createBudget(req, res) {
   try {
     const userId = req.user.userId;
-    const { categoryId, amount, period, startDate, endDate, alertThreshold } = req.body;
+    const { categoryId, amount, period, startDate, endDate, alertThreshold, emotionFilter, isEmotional } = req.body;
     
     // Validaciones
-    if (!categoryId || !amount || !period || !startDate) {
-      return res.status(400).json({ error: 'Faltan campos requeridos: categoryId, amount, period, startDate' });
+    // Para presupuestos emocionales, categoryId es opcional
+    if (!isEmotional && !categoryId) {
+      return res.status(400).json({ error: 'categoryId es requerido para presupuestos normales' });
+    }
+    
+    if (!amount || !period || !startDate) {
+      return res.status(400).json({ error: 'Faltan campos requeridos: amount, period, startDate' });
     }
     
     if (amount <= 0) {
@@ -73,18 +79,25 @@ async function createBudget(req, res) {
       return res.status(400).json({ error: 'El umbral de alerta debe estar entre 1 y 100' });
     }
     
+    // Validar presupuesto emocional
+    if (isEmotional && !emotionFilter) {
+      return res.status(400).json({ error: 'emotionFilter es requerido para presupuestos emocionales' });
+    }
+    
     // Formatear fechas a YYYY-MM-DD
     const formattedStartDate = startDate.split('T')[0];
     const formattedEndDate = endDate ? endDate.split('T')[0] : null;
     
     const budgetId = await budgetModel.createBudget(
       userId,
-      categoryId,
+      categoryId || null,  // NULL para presupuestos emocionales sin categoría
       amount,
       period,
       formattedStartDate,
       formattedEndDate,
-      alertThreshold || 80
+      alertThreshold || 80,
+      emotionFilter || null,
+      isEmotional || false
     );
     
     // Gamificación: verificar logros de presupuestos
