@@ -48,6 +48,12 @@ exports.create = async (req, res) => {
       await gamificationModel.updateStreak(userId, date);
       await gamificationModel.checkTransactionAchievements(userId);
       await gamificationModel.checkSavingsAchievements(userId);
+      
+      // Verificar logros emocionales si la transacción tiene emoción asociada
+      if (type === 'expense' && emotion) {
+        await gamificationModel.checkEmotionalAchievements(userId);
+      }
+      
       await gamificationModel.addExperience(userId, 5); // 5 XP por registrar transacción
       
       // Actualizar desafío de registro diario/semanal

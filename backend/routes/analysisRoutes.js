@@ -10,4 +10,16 @@ router.get('/emotional', authenticate, analysisController.emotionalAnalysis);
 // - El middleware 'authenticate' verifica el token JWT antes de permitir el acceso.
 // - El controlador 'emotionalAnalysis' procesa los datos y responde con el análisis en JSON.
 
+// --- Ruta para obtener análisis correlacional de emociones ---
+// GET /api/analysis/correlational
+router.get('/correlational', authenticate, analysisController.correlationalAnalysis);
+// - Devuelve análisis detallado: promedio por emoción, frecuencia, porcentajes, tendencias mensuales
+// - Identifica emoción más cara, más frecuente, riesgo emocional
+
+// --- Ruta para obtener recomendaciones basadas en patrones emocionales ---
+// GET /api/analysis/emotional-recommendations
+router.get('/emotional-recommendations', authenticate, analysisController.emotionalRecommendations);
+// - Genera alertas personalizadas (incrementos en emociones negativas, patrones de días)
+// - Proporciona recomendaciones concretas para mejorar salud financiera-emocional
+
 module.exports = router; // Exporta el router para ser usado en server.js

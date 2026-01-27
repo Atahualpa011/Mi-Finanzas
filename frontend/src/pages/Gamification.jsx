@@ -36,6 +36,11 @@ const CATEGORY_CONFIG = {
     name: 'Inversiones', 
     icon: 'bi-graph-up-arrow',
     badgeColor: 'bg-primary'
+  },
+  emotional: { 
+    name: 'Emocional', 
+    icon: 'bi-emoji-smile',
+    badgeColor: 'bg-gradient-purple'
   }
 };
 

@@ -10,6 +10,8 @@ export default function AchievementCard({ achievement }) {
       case 'discipline': return 'success';
       case 'social': return 'info';
       case 'savings': return 'warning';
+      case 'investments': return 'primary';
+      case 'emotional': return 'purple';
       default: return 'secondary';
     }
   };
@@ -21,6 +23,8 @@ export default function AchievementCard({ achievement }) {
       case 'discipline': return 'Disciplina';
       case 'social': return 'Social';
       case 'savings': return 'Ahorro';
+      case 'investments': return 'Inversiones';
+      case 'emotional': return 'Emocional';
       default: return category;
     }
   };

@@ -94,7 +94,144 @@ async function getUserAchievements(userId) {
     LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
     ORDER BY unlocked DESC, a.category, a.points ASC
   `, [userId]);
-  return rows;
+  
+  // Calcular progreso dinámico para logros no desbloqueados
+  const achievementsWithProgress = await Promise.all(rows.map(async (achievement) => {
+    if (achievement.unlocked) {
+      // Si ya está desbloqueado, el progreso es 100
+      achievement.progress = 100;
+      return achievement;
+    }
+    
+    // Calcular progreso según el código del logro
+    const progress = await calculateAchievementProgress(userId, achievement.code, achievement.target_value);
+    achievement.progress = progress;
+    
+    return achievement;
+  }));
+  
+  return achievementsWithProgress;
+}
+
+// Función auxiliar para calcular progreso de un logro específico
+async function calculateAchievementProgress(userId, achievementCode, targetValue) {
+  if (!targetValue) return 0;
+  
+  let currentValue = 0;
+  
+  try {
+    // LOGROS DE TRANSACCIONES
+    if (achievementCode.startsWith('transactions_') || achievementCode === 'first_transaction') {
+      const [rows] = await db.query(`SELECT COUNT(*) AS total FROM transactions WHERE user_id = ?`, [userId]);
+      currentValue = rows[0].total;
+    }
+    
+    // LOGROS DE AMIGOS
+    else if (achievementCode.startsWith('friends_') || achievementCode === 'first_friend') {
+      const [rows] = await db.query(`SELECT COUNT(*) AS total FROM friends WHERE user_id = ? AND status = 'accepted'`, [userId]);
+      currentValue = rows[0].total;
+    }
+    
+    // LOGROS DE GRUPOS
+    else if (achievementCode.startsWith('groups_') || achievementCode === 'first_group') {
+      const [rows] = await db.query(`SELECT COUNT(*) AS total FROM group_members WHERE user_id = ?`, [userId]);
+      currentValue = rows[0].total;
+    }
+    
+    // LOGROS DE RACHAS
+    else if (achievementCode.startsWith('streak_')) {
+      const [rows] = await db.query(`SELECT current_streak FROM user_streaks WHERE user_id = ?`, [userId]);
+      currentValue = rows.length > 0 ? rows[0].current_streak : 0;
+    }
+    
+    // LOGROS DE AHORROS
+    else if (achievementCode.startsWith('save_')) {
+      const [rows] = await db.query(`
+        SELECT COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) AS balance
+        FROM transactions WHERE user_id = ?
+      `, [userId]);
+      currentValue = parseFloat(rows[0].balance);
+    }
+    
+    // LOGROS EMOCIONALES
+    else if (achievementCode === 'emotional_awareness_1' || achievementCode === 'emotional_tracker_10' || achievementCode === 'emotional_master_50') {
+      const [rows] = await db.query(`
+        SELECT COUNT(*) AS total 
+        FROM transactions t
+        INNER JOIN expenses e ON e.transaction_id = t.id
+        WHERE t.user_id = ? AND e.emotion IS NOT NULL AND e.emotion != ''
+      `, [userId]);
+      currentValue = rows[0].total;
+    }
+    
+    else if (achievementCode === 'positive_investor') {
+      // Calcular porcentaje de gastos positivos
+      const [rows] = await db.query(`
+        SELECT e.emotion, SUM(t.amount) as total
+        FROM transactions t
+        INNER JOIN expenses e ON e.transaction_id = t.id
+        WHERE t.user_id = ? AND e.emotion IS NOT NULL AND e.emotion != ''
+        GROUP BY e.emotion
+      `, [userId]);
+      
+      const positiveEmotions = ['Felicidad', 'Alivio', 'Orgullo', 'Generosidad/Amor', 'Emocion/Entusiasmo'];
+      const negativeEmotions = ['Culpa', 'Ansiedad/Estres', 'Arrepentimiento', 'Frustracion', 'Verguenza'];
+      
+      let positiveTotal = 0;
+      let negativeTotal = 0;
+      
+      for (const row of rows) {
+        const emotions = row.emotion.split(',').map(e => e.trim());
+        for (const emotion of emotions) {
+          if (positiveEmotions.includes(emotion)) {
+            positiveTotal += parseFloat(row.total);
+          } else if (negativeEmotions.includes(emotion)) {
+            negativeTotal += parseFloat(row.total);
+          }
+        }
+      }
+      
+      const totalEmotionalExpenses = positiveTotal + negativeTotal;
+      currentValue = totalEmotionalExpenses > 0 ? ((positiveTotal / totalEmotionalExpenses) * 100) : 0;
+    }
+    
+    else if (achievementCode === 'mindful_spender') {
+      // Calcular días sin ansiedad
+      const [anxietyRows] = await db.query(`
+        SELECT t.date
+        FROM transactions t
+        INNER JOIN expenses e ON e.transaction_id = t.id
+        WHERE t.user_id = ? 
+          AND e.emotion IS NOT NULL 
+          AND (e.emotion LIKE '%Ansiedad/Estres%' OR e.emotion LIKE '%Ansiedad%' OR e.emotion LIKE '%Estres%')
+        ORDER BY t.date DESC
+        LIMIT 1
+      `, [userId]);
+      
+      if (anxietyRows.length > 0) {
+        const lastAnxietyDate = new Date(anxietyRows[0].date);
+        const today = new Date();
+        currentValue = Math.floor((today - lastAnxietyDate) / (1000 * 60 * 60 * 24));
+      } else {
+        // Verificar si tiene al menos alguna transacción emocional
+        const [emotionalRows] = await db.query(`
+          SELECT COUNT(*) AS total 
+          FROM transactions t
+          INNER JOIN expenses e ON e.transaction_id = t.id
+          WHERE t.user_id = ? AND e.emotion IS NOT NULL AND e.emotion != ''
+        `, [userId]);
+        currentValue = emotionalRows[0].total > 0 ? targetValue : 0; // Si nunca tuvo ansiedad, valor completo
+      }
+    }
+    
+    // Calcular porcentaje
+    const percentage = Math.min(Math.round((currentValue / targetValue) * 100), 100);
+    return percentage;
+    
+  } catch (error) {
+    console.error(`Error calculando progreso para ${achievementCode}:`, error);
+    return 0;
+  }
 }
 
 // Obtener logros desbloqueados del usuario
@@ -542,6 +679,99 @@ async function checkSavingsAchievements(userId) {
   }
 }
 
+// Verificar logros relacionados con emociones
+async function checkEmotionalAchievements(userId) {
+  // Contar transacciones con emociones
+  const [emotionalRows] = await db.query(`
+    SELECT COUNT(*) AS total 
+    FROM transactions t
+    INNER JOIN expenses e ON e.transaction_id = t.id
+    WHERE t.user_id = ? AND e.emotion IS NOT NULL AND e.emotion != ''
+  `, [userId]);
+  
+  const totalEmotional = emotionalRows[0].total;
+  
+  // Hitos de registro emocional
+  const emotionalMilestones = [
+    { count: 1, code: 'emotional_awareness_1' },
+    { count: 10, code: 'emotional_tracker_10' },
+    { count: 50, code: 'emotional_master_50' }
+  ];
+  
+  for (const milestone of emotionalMilestones) {
+    if (totalEmotional >= milestone.count) {
+      await unlockAchievement(userId, milestone.code);
+    }
+  }
+  
+  // Verificar si visitó la página de análisis emocional (esto se verificará desde el frontend)
+  // El logro 'self_awareness' se desbloqueará cuando visite /emotional-analysis
+  
+  // Verificar gastos positivos vs negativos (80% positivos)
+  const [emotionStatsRows] = await db.query(`
+    SELECT e.emotion, SUM(t.amount) as total
+    FROM transactions t
+    INNER JOIN expenses e ON e.transaction_id = t.id
+    WHERE t.user_id = ? AND e.emotion IS NOT NULL AND e.emotion != ''
+    GROUP BY e.emotion
+  `, [userId]);
+  
+  const positiveEmotions = ['Felicidad', 'Alivio', 'Orgullo', 'Generosidad/Amor', 'Emocion/Entusiasmo'];
+  const negativeEmotions = ['Culpa', 'Ansiedad/Estres', 'Arrepentimiento', 'Frustracion', 'Verguenza'];
+  
+  let positiveTotal = 0;
+  let negativeTotal = 0;
+  
+  for (const row of emotionStatsRows) {
+    const emotions = row.emotion.split(',').map(e => e.trim());
+    for (const emotion of emotions) {
+      if (positiveEmotions.includes(emotion)) {
+        positiveTotal += parseFloat(row.total);
+      } else if (negativeEmotions.includes(emotion)) {
+        negativeTotal += parseFloat(row.total);
+      }
+    }
+  }
+  
+  const totalEmotionalExpenses = positiveTotal + negativeTotal;
+  if (totalEmotionalExpenses > 0) {
+    const positivePercentage = (positiveTotal / totalEmotionalExpenses) * 100;
+    
+    // 80% de gastos positivos
+    if (positivePercentage >= 80) {
+      await unlockAchievement(userId, 'positive_investor');
+    }
+  }
+  
+  // Verificar 5 días consecutivos sin ansiedad/estrés
+  const [anxietyRows] = await db.query(`
+    SELECT t.date
+    FROM transactions t
+    INNER JOIN expenses e ON e.transaction_id = t.id
+    WHERE t.user_id = ? 
+      AND e.emotion IS NOT NULL 
+      AND (e.emotion LIKE '%Ansiedad/Estres%' OR e.emotion LIKE '%Ansiedad%' OR e.emotion LIKE '%Estres%')
+    ORDER BY t.date DESC
+    LIMIT 1
+  `, [userId]);
+  
+  if (anxietyRows.length > 0) {
+    const lastAnxietyDate = new Date(anxietyRows[0].date);
+    const today = new Date();
+    const daysDiff = Math.floor((today - lastAnxietyDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysDiff >= 5) {
+      await unlockAchievement(userId, 'mindful_spender');
+    }
+  } else if (totalEmotional >= 5) {
+    // Si nunca tuvo gastos por ansiedad y tiene al menos 5 transacciones emocionales
+    await unlockAchievement(userId, 'mindful_spender');
+  }
+  
+  // Verificar control emocional (reducción 20% mes anterior) - se verificará mensualmente
+  // Verificar equilibrio emocional (3 meses con <30% negativos) - se verificará mensualmente
+}
+
 // ============================================================================
 // EXPORTAR FUNCIONES
 // ============================================================================
@@ -575,5 +805,6 @@ module.exports = {
   checkSocialAchievements,
   checkGroupAchievements,
   checkBudgetAchievements,
-  checkSavingsAchievements
+  checkSavingsAchievements,
+  checkEmotionalAchievements
 };

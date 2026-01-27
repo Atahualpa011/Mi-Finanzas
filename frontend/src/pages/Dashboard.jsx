@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { useCurrency } from '../hooks/useCurrency';
 import { format, parseISO } from 'date-fns';
+import EmotionalRecommendations from '../components/EmotionalRecommendations';
 
 // --- Registro de componentes de Chart.js ---
 ChartJS.register(
@@ -733,6 +734,11 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* ============ WIDGET DE RECOMENDACIONES EMOCIONALES ============ */}
+      <div className="mb-4">
+        <EmotionalRecommendations compact={true} />
+      </div>
 
       {/* Sección de transacciones: últimos 6 movimientos */}
       <div 

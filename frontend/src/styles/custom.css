@@ -37,6 +37,10 @@
   --info: #06b6d4;
   --info-light: #cffafe;
   
+  /* === COLORES DE CATEGORÍAS === */
+  --purple: #8b5cf6;
+  --purple-light: #ede9fe;
+  
   /* === SOMBRAS === */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -208,6 +212,40 @@
 ::-webkit-scrollbar-thumb {
   background: var(--border-medium);
   border-radius: var(--radius-full);
+}
+
+/* === CLASES DE CATEGORÍAS PERSONALIZADAS === */
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%) !important;
+  color: white !important;
+}
+
+.badge.bg-gradient-purple {
+  background: var(--purple) !important;
+  color: white !important;
+}
+
+.text-purple {
+  color: var(--purple) !important;
+}
+
+.bg-purple {
+  background-color: var(--purple) !important;
+  color: white !important;
+}
+
+.bg-purple.bg-opacity-10 {
+  background-color: var(--purple-light) !important;
+  color: var(--purple) !important;
+}
+
+.bg-purple.bg-opacity-25 {
+  background-color: rgba(139, 92, 246, 0.25) !important;
+}
+
+:root {
+  --bs-purple: #8b5cf6;
+  --bs-purple-rgb: 139, 92, 246;
 }
 
 ::-webkit-scrollbar-thumb:hover {

@@ -67,7 +67,8 @@ AppFinanzas/
 │   │   ├── budgetModel.js
 │   │   ├── gamificationModel.js
 │   │   ├── investmentModel.js
-│   │   └── suggestedTransactionModel.js
+│   │   ├── suggestedTransactionModel.js
+│   │   └── emotionalAnalysisModel.js
 │   ├── routes/                # Definición de endpoints de la API
 │   │   ├── authRoutes.js
 │   │   ├── transactionRoutes.js
@@ -124,7 +125,8 @@ AppFinanzas/
 │   │   │   ├── StreakDisplay.jsx
 │   │   │   ├── ChallengeCard.jsx
 │   │   │   ├── AchievementNotification.jsx
-│   │   │   └── UserLevelBadge.jsx
+│   │   │   ├── UserLevelBadge.jsx
+│   │   │   └── EmotionalRecommendations.jsx
 │   │   └── hooks/            # Custom hooks
 │   │       ├── useCurrency.js  # Hook para gestión de monedas
 │   │       └── useAchievementNotifications.js
@@ -136,7 +138,9 @@ AppFinanzas/
     ├── currency_migration.sql # Migración del sistema de monedas
     ├── budgets_migration.sql # Migración de presupuestos y alertas
     ├── gamification_migration.sql # Migración del sistema de gamificación
-    └── investments_migration.sql # Migración del sistema de inversiones
+    ├── investments_migration.sql # Migración del sistema de inversiones
+    ├── investments_achievements.sql # Logros de inversiones
+    └── emotional_achievements.sql # Logros emocionales
 ```
 
 ## Configuración e Instalación
@@ -358,8 +362,10 @@ La base de datos utiliza MySQL con las siguientes tablas principales:
 - `PUT /api/groups/:id/budgets/:budgetId` - Actualizar presupuesto grupal
 - `DELETE /api/groups/:id/budgets/:budgetId` - Eliminar presupuesto grupal
 
-### Análisis
-- `POST /api/analysis/emotional` - Obtener análisis emocional de gastos
+### Análisis Emocional
+- `GET /api/analysis/emotional` - Obtener análisis emocional básico de gastos
+- `GET /api/analysis/correlational` - Obtener análisis correlacional detallado (promedio, frecuencia, tendencias)
+- `GET /api/analysis/emotional-recommendations` - Obtener recomendaciones personalizadas basadas en patrones emocionales
 
 ### Transacciones Sugeridas
 - `GET /api/suggested-transactions` - Listar sugerencias pendientes
@@ -468,10 +474,41 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Alerta al exceder el presupuesto
   - Alerta al acercarse al límite
 - Gestión de alertas (marcar como leídas)
-- Prevención de alertas duplicadas
-
-### 6. Análisis Emocional
-- Análisis del impacto emocional de los gastos
+- PreveSistema de Análisis Emocional Avanzado
+- **Registro de Emociones:**
+  - Asociar múltiples emociones a cada gasto (12 emociones disponibles)
+  - Clasificación en positivas, negativas y neutras
+  - Campo opcional de destino/motivo del gasto
+  
+- **Análisis Correlacional:**
+  - Promedio de gasto por emoción
+  - Frecuencia de cada emoción registrada
+  - Porcentaje del total de gastos emocionales
+  - Comparación mensual (mes actual vs anterior)
+  - Detección de tendencias (creciente/decreciente/estable)
+  - Identificación de emoción más cara y más frecuente
+  - Cálculo de riesgo emocional (bajo/medio/alto)
+  
+- **Visualizaciones Avanzadas:**
+  - Tarjetas de métricas clave (emoción más cara, más frecuente, riesgo, balance)
+  - Gráfico de torta (distribución de gastos)
+  - Gráfico de barras comparativo (gasto promedio por emoción)
+  - Tabla detallada con correlaciones y tendencias
+  - Códigos de color según tipo de emoción
+  
+- **Sistema de Recomendaciones:**
+  - Alertas automáticas de incrementos en emociones negativas (>30%)
+  - Detección de patrones por día de la semana
+  - Alertas cuando una emoción representa >40% del gasto total
+  - Recomendaciones personalizadas según balance emocional
+  - Sugerencias de acciones concretas con beneficios explicados
+  - Widget de recomendaciones en Dashboard
+  
+- **Integración con Gamificación:**
+  - 8 logros exclusivos de control emocional
+  - Verificación automática al registrar gastos con emociones
+  - Progreso dinámico visible en tarjetas de logros
+  - Logros por conciencia emocional, control y equilibrio los gastos
 - Categorización emocional de transacciones
 - Visualizaciones y recomendaciones
 
@@ -509,19 +546,28 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Tarjetas de resumen con métricas clave
   - Tabla con iconos por tipo de inversión
   - Colores indicadores (verde=ganancia, rojo=pérdida)
-  - Badges de estado (activa/cerrada)
-  - Card de resumen en Dashboard principal con métricas consolidadas
-- **Filtros Avanzados:**
-  - Búsqueda por nombre, plataforma o descripción
-  - Filtro por tipo de inversión
-  - Filtro por estado (activas/cerradas)
-  - Contador de resultados filtrados
-  - Botón de limpieza rápida
-- **Integración con Gamificación:**
-  - 18 logros exclusivos de inversiones
-  - Logros por primera inversión y diversificación
-  - Logros por tipo (cripto, acciones, inmuebles)
-  - Logros por rentabilidad (10%, 25%, 50% de ganancia)
+  - Badges de estado (activ56 total):**
+  - **Hitos:** Primera transacción, 10 transacciones, 50, 100, 500, 1000
+  - **Rachas:** 3 días consecutivos, 7, 15, 30, 60, 90 días
+  - **Disciplina:** Cumplir presupuesto semanal/mensual, no exceder durante 3/6 meses
+  - **Social:** Primer amigo, transferencia, 5/10 amigos, primer/décimo grupo
+  - **Ahorros:** $1000, $5000, $10000, $50000, $100000 en ingresos totales
+  - **Inversiones (18 logros):**
+    - Primera inversión y diversificación (5, 10 inversiones)
+    - Por tipo específico (cripto, acciones, inmuebles)
+    - Por seguimiento (10, 50 valuaciones)
+    - Por rentabilidad (primera ganancia, 10%, 25%, 50%)
+    - Por inversiones cerradas (5, 10 cerradas)
+    - Por tamaño de portafolio ($100K, $500K, $1M)
+  - **Emocionales (8 logros nuevos):**
+    - Conciencia Emocional: Primera transacción con emoción (15 XP)
+    - Rastreador Emocional: 10 transacciones con emociones (25 XP)
+    - Maestro Emocional: 50 transacciones con emociones (50 XP)
+    - Autoconocimiento: Visitar página de análisis emocional (30 XP)
+    - Control Emocional: Reducir gastos negativos 20% vs mes anterior (100 XP)
+    - Inversor Positivo: 80% gastos con emociones positivas (75 XP)
+    - Equilibrio Emocional: <30% gastos negativos por 3 meses (150 XP)
+    - Gasto Consciente: 5 días sin gastos por ansiedad/estrés (80 XPancia)
   - Logros por seguimiento activo (valuaciones)
   - Logros por portafolio ($100K, $500K, $1M)
 - **Automatización al Cerrar:**
@@ -541,13 +587,22 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Gana XP por cada acción (transacciones, presupuestos, amigos, grupos, inversiones)
   - Sube de nivel automáticamente (Nivel 2 = 100 XP, Nivel 3 = 200 XP, etc.)
   - Barra de progreso visual con XP restante
-  
-- **Logros Desbloqueables (48 total):**
-  - **Hitos:** Primera transacción, 10 transacciones, 50, 100, 500, 1000
-  - **Rachas:** 3 días consecutivos, 7, 15, 30, 60, 90 días
-  - **Disciplina:** Cumplir presupuesto semanal/mensual, no exceder durante 3/6 meses
-  - **Social:** Primer amigo, transferencia, 5/10 amigos, primer/décimo grupo
-  - **Ahorros:** $1000, $5000, $10000, $50000, $100000 en ingresos totales
+  - Verificación de logros emocionales al registrar gastos con emociones
+
+- **Sistema Dinámico de Categorías:**
+  - Categorías de logros cargadas dinámicamente desde la base de datos
+  - 7 categorías: Hitos, Rachas, Disciplina, Social, Ahorros, Inversiones, Emocional
+  - Filtros en frontend generados automáticamente
+  - Configuración visual centralizada en `CATEGORY_CONFIG` (íconos, colores, nombres)
+  - Categoría "Emocional" con ícono 😊 y color púrpura
+  - Escalable: agregar nuevas categorías solo requiere insertar en BD
+  - Sin código hardcodeado: permite extensibilidad futura
+
+- **Progreso Dinámico:**
+  - Cálculo automático de progreso para logros no desbloqueados
+  - Barras de progreso visuales en tarjetas de logros
+  - Porcentajes actualizados en tiempo real según actividad del usuario
+  - Soporte para todos los tipos de logros (transacciones, amigos, rachas, ahorros, emocionale
   - **Inversiones (18 logros nuevos):**
     - Primera inversión y diversificación (5, 10 inversiones)
     - Por tipo específico (cripto, acciones, inmuebles)
