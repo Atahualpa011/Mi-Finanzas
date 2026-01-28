@@ -23,6 +23,7 @@ export default function Sidebar({ expanded, setExpanded }) {
     { to: '/friends', icon: 'bi-people', label: 'Amigos' },
     { to: '/groups', icon: 'bi-collection', label: 'Grupos' },
     { to: '/emotional-analysis', icon: 'bi-bar-chart', label: 'Análisis' },
+    { to: '/insights', icon: 'bi-lightbulb', label: 'Insights' },
     { to: '/profile', icon: 'bi-person', label: 'Perfil' },
   ];
 

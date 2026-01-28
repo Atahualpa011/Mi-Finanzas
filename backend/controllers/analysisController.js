@@ -1,21 +1,7 @@
 const pool = require('../db'); // Importa la conexión a la base de datos
 const emotionalAnalysisModel = require('../models/emotionalAnalysisModel');
 const gamificationModel = require('../models/gamificationModel');
-
-// --- Define los tipos de emociones (compartido entre funciones) ---
-const EMOTION_TYPES = {
-  positive: ['Felicidad', 'Alivio', 'Orgullo', 'Generosidad/Amor', 'Emocion/Entusiasmo'],
-  negative: ['Culpa', 'Ansiedad/Estres', 'Arrepentimiento', 'Frustracion', 'Verguenza'],
-  neutral: ['Indiferencia', 'Ambivalencia']
-};
-
-// --- Función auxiliar para clasificar emociones ---
-function getEmotionType(emotion) {
-  if (EMOTION_TYPES.positive.includes(emotion)) return 'positive';
-  if (EMOTION_TYPES.negative.includes(emotion)) return 'negative';
-  if (EMOTION_TYPES.neutral.includes(emotion)) return 'neutral';
-  return 'other';
-}
+const { getEmotionType, EMOTION_TYPES } = require('../utils/emotionUtils'); // Utilidades compartidas
 
 // --- Endpoint principal: análisis emocional de gastos ---
 exports.emotionalAnalysis = async (req, res) => {

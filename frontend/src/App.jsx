@@ -18,6 +18,7 @@ import EmotionalAnalysis from './pages/EmotionalAnalysis';
 import Budgets         from './pages/Budgets';
 import Gamification    from './pages/Gamification';
 import Investments     from './pages/Investments';
+import Insights        from './pages/Insights';
 import './App.css';
 
 // --- Componente principal de la aplicación: define rutas y layout global ---
@@ -129,6 +130,14 @@ function App() {
           <Route
             path="/emotional-analysis"
             element={<EmotionalAnalysis />}
+          />
+          <Route
+            path="/insights"
+            element={
+              <ProtectedRoute>
+                <Insights />
+              </ProtectedRoute>
+            }
           />
         </Routes>
       </Layout>

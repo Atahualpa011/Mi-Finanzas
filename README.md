@@ -14,6 +14,7 @@ AppFinanzas es una aplicación web full-stack para la gestión de finanzas perso
 - Recibir sugerencias automáticas de transacciones
 - Gestionar invitaciones y liquidaciones de grupos
 - Visualizar estadísticas de grupos e interacciones
+- Obtener insights y recomendaciones personalizadas con IA
 
 ## Arquitectura del Proyecto
 
@@ -36,6 +37,7 @@ AppFinanzas es una aplicación web full-stack para la gestión de finanzas perso
 - Bcrypt (Encriptación de contraseñas)
 - CORS (Cross-Origin Resource Sharing)
 - dotenv (Variables de entorno)
+- Integración con IA (Google Gemini, OpenAI, Anthropic)
 
 ### Estructura de Carpetas
 
@@ -56,6 +58,7 @@ AppFinanzas/
 │   │   ├── budgetController.js
 │   │   ├── gamificationController.js
 │   │   ├── investmentController.js
+│   │   ├── insightsController.js
 │   │   └── suggestedTransactionController.js
 │   ├── models/                # Acceso a datos (queries SQL)
 │   │   ├── userModel.js
@@ -67,6 +70,7 @@ AppFinanzas/
 │   │   ├── budgetModel.js
 │   │   ├── gamificationModel.js
 │   │   ├── investmentModel.js
+│   │   ├── insightsModel.js
 │   │   ├── suggestedTransactionModel.js
 │   │   └── emotionalAnalysisModel.js
 │   ├── routes/                # Definición de endpoints de la API
@@ -80,6 +84,7 @@ AppFinanzas/
 │   │   ├── profileRoutes.js
 │   │   ├── budgetRoutes.js
 │   │   ├── gamificationRoutes.js
+│   │   ├── insightsRoutes.js
 │   │   ├── investmentRoutes.js
 │   │   └── suggestedTransactionRoutes.js
 │   └── middleware/            # Middleware personalizado
@@ -103,6 +108,7 @@ AppFinanzas/
 │   │   │   ├── Investments.jsx # Gestión de inversiones
 │   │   │   ├── Gamification.jsx # Sistema de gamificación
 │   │   │   ├── EmotionalAnalysis.jsx
+│   │   │   ├── Insights.jsx  # Análisis y recomendaciones con IA
 │   │   │   └── Profile.jsx
 │   │   ├── components/       # Componentes reutilizables
 │   │   │   ├── Layout.jsx
@@ -142,7 +148,8 @@ AppFinanzas/
     ├── investments_achievements.sql # Logros de inversiones
     ├── emotional_achievements.sql # Logros emocionales
     ├── emotional_warnings_migration.sql # Soporte para alertas emocionales
-    └── emotional_budgets_migration.sql # Presupuestos emocionales
+    ├── emotional_budgets_migration.sql # Presupuestos emocionales
+    └── insights_migration.sql # Sistema de insights y recomendaciones con IA
 ```
 
 ## Configuración e Instalación
