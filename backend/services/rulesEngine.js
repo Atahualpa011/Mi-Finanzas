@@ -11,7 +11,7 @@
 function generateFindings(metrics) {
   const findings = [];
   let findingId = 1;
-  
+
   // REGLA 1: Aumento significativo en gastos (>30%)
   if (metrics.expenses.changePercentage > 30) {
     findings.push({
@@ -58,7 +58,7 @@ function generateFindings(metrics) {
       }
     });
   }
-  
+
   // REGLA 2: Presupuestos excedidos
   if (metrics.budgets.exceeded > 0) {
     const exceededBudgets = metrics.budgets.items.filter(b => b.status === 'exceeded');
@@ -80,7 +80,7 @@ function generateFindings(metrics) {
       });
     });
   }
-  
+
   // REGLA 3: Presupuestos en alerta (warning)
   if (metrics.budgets.warning > 0) {
     const warningBudgets = metrics.budgets.items.filter(b => b.status === 'warning');
@@ -100,17 +100,17 @@ function generateFindings(metrics) {
       });
     });
   }
-  
+
   // REGLA 4: Emociones negativas predominantes (>60%)
   if (metrics.emotions.totalWithEmotion > 0) {
-    const totalEmotional = metrics.emotions.positiveVsNegative.positive + 
-                          metrics.emotions.positiveVsNegative.negative + 
-                          metrics.emotions.positiveVsNegative.neutral;
-    
-    const negativePercentage = totalEmotional > 0 
-      ? (metrics.emotions.positiveVsNegative.negative / totalEmotional) * 100 
+    const totalEmotional = metrics.emotions.positiveVsNegative.positive +
+      metrics.emotions.positiveVsNegative.negative +
+      metrics.emotions.positiveVsNegative.neutral;
+
+    const negativePercentage = totalEmotional > 0
+      ? (metrics.emotions.positiveVsNegative.negative / totalEmotional) * 100
       : 0;
-    
+
     if (negativePercentage > 60) {
       findings.push({
         id: `negative_emotions_high`,
@@ -141,7 +141,7 @@ function generateFindings(metrics) {
       });
     }
   }
-  
+
   // REGLA 5: Categoría representa >40% del gasto total (pico sospechoso)
   if (metrics.categoryDistribution && metrics.categoryDistribution.length > 0) {
     const topCategory = metrics.categoryDistribution[0];
@@ -161,7 +161,7 @@ function generateFindings(metrics) {
       });
     }
   }
-  
+
   // REGLA 6: Balance positivo (ingresos > gastos)
   if (metrics.balance.current > 0) {
     findings.push({
@@ -191,7 +191,7 @@ function generateFindings(metrics) {
       }
     });
   }
-  
+
   // REGLA 7: Incremento significativo en ingresos (>20%)
   if (metrics.income.changePercentage > 20) {
     findings.push({
@@ -208,7 +208,7 @@ function generateFindings(metrics) {
       }
     });
   }
-  
+
   // REGLA 8: Día con mayor gasto identificado
   if (metrics.patterns.dayWithMostExpenses) {
     findings.push({
@@ -223,7 +223,7 @@ function generateFindings(metrics) {
       }
     });
   }
-  
+
   // Generar resumen
   const summary = {
     totalFindings: findings.length,
@@ -235,14 +235,14 @@ function generateFindings(metrics) {
     },
     byCategory: {}
   };
-  
+
   findings.forEach(f => {
     if (!summary.byCategory[f.category]) {
       summary.byCategory[f.category] = 0;
     }
     summary.byCategory[f.category]++;
   });
-  
+
   return {
     findings,
     summary

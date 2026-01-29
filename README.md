@@ -765,6 +765,40 @@ Landing (/)
 - Siempre usar consultas parametrizadas para prevenir SQL injection
 - Ejemplo: `db.query('SELECT * FROM users WHERE id = ?', [userId])`
 
+## Chatbot de Telegram
+
+El bot de Telegram permite gestionar finanzas directamente desde la app de mensajería.
+
+### Configuración Rápida
+
+1. Crea un bot en [@BotFather](https://t.me/BotFather) y obtén el token
+2. Agrega `TELEGRAM_BOT_TOKEN=tu_token` a `.env`
+3. Ejecuta la migración: `mysql -u root -p appfinanzas < db/telegram_migration.sql`
+4. Inicia el servidor: `npm run dev`
+
+### Comandos Disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `/start` | Iniciar y vincular cuenta |
+| `/ingreso <monto> <categoría> [descripción]` | Registrar ingreso |
+| `/gasto <monto> <categoría> [descripción]` | Registrar gasto |
+| `/balance` | Ver balance actual |
+| `/ultimos [n]` | Ver últimas n transacciones |
+| `/resumen` | Resumen del mes actual |
+| `/presupuestos` | Estado de presupuestos |
+| `/categorias` | Listar categorías |
+| `/ayuda` | Ayuda completa |
+| `/desvincular` | Desvincular cuenta |
+
+### Vinculación de Cuenta
+
+1. Ir a Perfil → Telegram en la app web
+2. Generar código de vinculación
+3. Enviar el código al bot en Telegram
+
+**Documentación completa:** Ver `backend/TELEGRAM_BOT_README.md`
+
 ## Licencia
 
 Este proyecto es de uso educativo/personal.
