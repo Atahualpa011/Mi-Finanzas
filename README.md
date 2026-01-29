@@ -46,8 +46,22 @@ AppFinanzas/
 ├── backend/                    # Servidor Node.js + Express
 │   ├── server.js              # Punto de entrada del servidor
 │   ├── db.js                  # Configuración de conexión a MySQL
+│   ├── bot/                   # Bot de Telegram
+│   │   ├── telegramBot.js     # Punto de entrada del bot
+│   │   ├── commands/          # Comandos del bot
+│   │   │   ├── authCommands.js        # /start, /desvincular
+│   │   │   ├── transactionCommands.js # /ingreso, /gasto
+│   │   │   ├── queryCommands.js       # /balance, /ultimos, /resumen
+│   │   │   ├── budgetCommands.js      # /presupuestos
+│   │   │   └── utilityCommands.js     # /ayuda, /categorias
+│   │   ├── middleware/        # Middleware del bot
+│   │   │   └── botAuth.js     # Verificación de vinculación
+│   │   └── utils/             # Utilidades del bot
+│   │       ├── messageFormatter.js # Formateo de mensajes
+│   │       └── validators.js       # Validación de inputs
 │   ├── controllers/           # Lógica de negocio
 │   │   ├── authController.js
+│   │   ├── botController.js
 │   │   ├── transactionController.js
 │   │   ├── groupController.js
 │   │   ├── friendController.js
@@ -62,6 +76,7 @@ AppFinanzas/
 │   │   └── suggestedTransactionController.js
 │   ├── models/                # Acceso a datos (queries SQL)
 │   │   ├── userModel.js
+│   │   ├── telegramUserModel.js
 │   │   ├── transactionModel.js
 │   │   ├── groupModel.js
 │   │   ├── friendModel.js
@@ -75,6 +90,7 @@ AppFinanzas/
 │   │   └── emotionalAnalysisModel.js
 │   ├── routes/                # Definición de endpoints de la API
 │   │   ├── authRoutes.js
+│   │   ├── botRoutes.js
 │   │   ├── transactionRoutes.js
 │   │   ├── groupRoutes.js
 │   │   ├── friendRoutes.js
@@ -87,9 +103,16 @@ AppFinanzas/
 │   │   ├── insightsRoutes.js
 │   │   ├── investmentRoutes.js
 │   │   └── suggestedTransactionRoutes.js
+│   ├── services/              # Servicios de lógica compleja
+│   │   ├── aiService.js       # Integración con modelos de IA
+│   │   ├── metricsService.js  # Cálculo de métricas
+│   │   └── rulesEngine.js     # Motor de reglas
+│   ├── utils/                 # Utilidades generales
+│   │   └── emotionUtils.js    # Helpers para emociones
 │   └── middleware/            # Middleware personalizado
 │       ├── authenticate.js    # Verificación de JWT
-│       └── groupMember.js     # Verificación de membresía en grupos
+│       ├── groupMember.js     # Verificación de membresía en grupos
+│       └── rateLimit.js       # Limitación de peticiones
 ├── frontend/                  # Aplicación React
 │   ├── src/
 │   │   ├── main.jsx          # Punto de entrada de React
@@ -149,7 +172,8 @@ AppFinanzas/
     ├── emotional_achievements.sql # Logros emocionales
     ├── emotional_warnings_migration.sql # Soporte para alertas emocionales
     ├── emotional_budgets_migration.sql # Presupuestos emocionales
-    └── insights_migration.sql # Sistema de insights y recomendaciones con IA
+    ├── insights_migration.sql # Sistema de insights y recomendaciones con IA
+    └── telegram_migration.sql # Integración con bot de Telegram
 ```
 
 ## Configuración e Instalación
