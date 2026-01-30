@@ -140,6 +140,7 @@ AppFinanzas/
 │   │   │   ├── ProtectedRoute.jsx
 │   │   │   ├── Hero.jsx
 │   │   │   ├── Features.jsx
+│   │   │   ├── HelpButton.jsx # Botón de ayuda con modal de guía
 │   │   │   ├── GroupMembers.jsx
 │   │   │   ├── GroupExpenses.jsx
 │   │   │   ├── GroupSummary.jsx
@@ -156,9 +157,13 @@ AppFinanzas/
 │   │   │   ├── AchievementNotification.jsx
 │   │   │   ├── UserLevelBadge.jsx
 │   │   │   └── EmotionalRecommendations.jsx
-│   │   └── hooks/            # Custom hooks
-│   │       ├── useCurrency.js  # Hook para gestión de monedas
-│   │       └── useAchievementNotifications.js
+│   │   ├── hooks/            # Custom hooks
+│   │   │   ├── useCurrency.js  # Hook para gestión de monedas
+│   │   │   └── useAchievementNotifications.js
+│   │   ├── styles/           # Estilos personalizados
+│   │   │   └── HelpButton.css # Estilos del sistema de ayuda
+│   │   └── utils/            # Utilidades del frontend
+│   │       └── helpContents.js # Contenidos de las guías de usuario
 │   ├── public/               # Archivos estáticos
 │   └── vite.config.js        # Configuración de Vite
 ├── config/                    # Archivos de configuración (vacío actualmente)
@@ -618,12 +623,29 @@ La aplicación usa **JWT (JSON Web Tokens)** para la autenticación:
   - Mantiene histórico completo en ambos módulos
 - **Multi-moneda:** Cada inversión mantiene su moneda original
 
-### 9. Personalización
+### 9. Sistema de Ayuda Interactivo
+- **Guías contextuales en cada sección:**
+  - Botón "¿Qué puedo hacer?" visible en todas las páginas
+  - Modal con documentación completa de funcionalidades
+  - Instrucciones paso a paso para cada característica
+  - Consejos y mejores prácticas
+  - Advertencias importantes
+- **Secciones con guía:**
+  - Dashboard, Movimientos, Amigos, Grupos
+  - Presupuestos, Inversiones, Gamificación
+  - Perfil, Insights, Análisis Emocional
+- **Contenido rico:**
+  - Formato HTML con íconos y estilos
+  - Listas organizadas y secciones claramente definidas
+  - Alertas visuales para información importante
+  - Ejemplos de uso para cada funcionalidad
+
+### 10. Personalización
 - Selección de moneda preferida en perfil
 - Categorías personalizadas
 - Perfil de usuario editable
 
-### 10. Sistema de Gamificación
+### 11. Sistema de Gamificación
 - **Sistema de Niveles y Experiencia (XP):**
   - Gana XP por cada acción (transacciones, presupuestos, amigos, grupos, inversiones)
   - Sube de nivel automáticamente (Nivel 2 = 100 XP, Nivel 3 = 200 XP, etc.)

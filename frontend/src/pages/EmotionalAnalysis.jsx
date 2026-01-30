@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Pie, Bar, Line } from 'react-chartjs-2';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 // --- Página de análisis emocional de gastos (REFACTORIZADO) ---
 export default function EmotionalAnalysis() {
@@ -175,6 +177,11 @@ export default function EmotionalAnalysis() {
   // --- Render principal ---
   return (
     <div className="container-fluid py-4">
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="emotional" helpContent={HELP_CONTENTS.emotional} />
+      </div>
+
       {/* Encabezado */}
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div className="d-flex align-items-center">

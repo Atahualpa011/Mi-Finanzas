@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../hooks/useCurrency';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 export default function Investments() {
   const navigate = useNavigate();
@@ -353,6 +355,11 @@ export default function Investments() {
 
   return (
     <div className="container-fluid py-4">
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="investments" helpContent={HELP_CONTENTS.investments} />
+      </div>
+
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../hooks/useCurrency';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 export default function Profile() {
   // --- Estados principales ---
@@ -154,6 +156,11 @@ export default function Profile() {
   // --- Render principal ---
   return (
     <div className="container-fluid" style={{ padding: 'var(--spacing-lg)' }}>
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="profile" helpContent={HELP_CONTENTS.profile} />
+      </div>
+
       {/* Header */}
       <div style={{ marginBottom: 'var(--spacing-xl)' }}>
         <h2

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BudgetAlerts from '../components/BudgetAlerts';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 export default function Budgets() {
   const navigate = useNavigate();
@@ -203,6 +205,11 @@ export default function Budgets() {
 
   return (
     <div className="container-fluid">
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="budgets" helpContent={HELP_CONTENTS.budgets} />
+      </div>
+
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
           <h2 

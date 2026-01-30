@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 export default function Insights() {
   const [period, setPeriod] = useState('current');
@@ -198,6 +200,11 @@ export default function Insights() {
 
   return (
     <div className="container-fluid py-4">
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="insights" helpContent={HELP_CONTENTS.insights} />
+      </div>
+
       {/* Header */}
       <div className="row mb-4">
         <div className="col">

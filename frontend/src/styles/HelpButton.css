@@ -1,0 +1,103 @@
+/* Estilos para el contenido de ayuda */
+.help-content h3 {
+  color: var(--primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-content h3:first-child {
+  margin-top: 0;
+}
+
+.help-content h4 {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.help-content p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.help-content ul, .help-content ol {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.help-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.help-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.help-content code {
+  background-color: var(--bg-secondary);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: var(--primary);
+  font-family: 'Courier New', monospace;
+}
+
+.help-content .alert {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.help-content .alert-info {
+  background-color: rgba(13, 110, 253, 0.1);
+  border-left: 4px solid #0d6efd;
+  color: var(--text-primary);
+}
+
+.help-content .alert-success {
+  background-color: rgba(25, 135, 84, 0.1);
+  border-left: 4px solid #198754;
+  color: var(--text-primary);
+}
+
+.help-content .alert-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left: 4px solid #ffc107;
+  color: var(--text-primary);
+}
+
+/* Íconos en el contenido */
+.help-content .bi {
+  color: var(--primary);
+  margin-right: 0.25rem;
+}
+
+/* Scrollbar personalizado para el modal */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}

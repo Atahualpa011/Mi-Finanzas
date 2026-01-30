@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GroupInvitations from '../components/GroupInvitations';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 export default function GroupsList() {
   // --- Estados principales ---
@@ -86,6 +88,11 @@ export default function GroupsList() {
 
   return (
     <div className="container-fluid" style={{ padding: 'var(--spacing-lg)' }}>
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="groups" helpContent={HELP_CONTENTS.groups} />
+      </div>
+
       {/* Header */}
       <div style={{ marginBottom: 'var(--spacing-xl)' }}>
         <h2 

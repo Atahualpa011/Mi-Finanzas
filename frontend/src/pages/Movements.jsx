@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCurrency } from '../hooks/useCurrency';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 export default function Movements() {
   // --- Estados principales ---
@@ -134,6 +136,11 @@ export default function Movements() {
   // --- Render principal ---
   return (
     <>
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="movements" helpContent={HELP_CONTENTS.movements} />
+      </div>
+
       <div className="mb-4">
         <h2 
           className="mb-1" 

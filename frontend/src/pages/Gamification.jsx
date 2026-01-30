@@ -4,6 +4,8 @@ import AchievementCard from '../components/AchievementCard';
 import StreakDisplay from '../components/StreakDisplay';
 import ChallengeCard from '../components/ChallengeCard';
 import AchievementNotification from '../components/AchievementNotification';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 // Mapeo de categorías para nombres en español e íconos
 const CATEGORY_CONFIG = {
@@ -174,6 +176,11 @@ export default function Gamification() {
 
   return (
     <div className="container-fluid py-4">
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="gamification" helpContent={HELP_CONTENTS.gamification} />
+      </div>
+
       {/* Encabezado */}
       <div className="d-flex align-items-center mb-4">
         <i className="bi bi-trophy-fill fs-2 text-warning me-3"></i>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 function Friends() {
   const [friends, setFriends] = useState([]);
@@ -181,6 +183,11 @@ function Friends() {
 
   return (
     <div className="container-fluid" style={{ padding: 'var(--spacing-lg)' }}>
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="friends" helpContent={HELP_CONTENTS.friends} />
+      </div>
+
       {/* Loading State */}
       {loading ? (
         <div className="text-center" style={{ padding: 'var(--spacing-2xl)' }}>

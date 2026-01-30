@@ -16,6 +16,8 @@ import {
 import { useCurrency } from '../hooks/useCurrency';
 import { format, parseISO } from 'date-fns';
 import EmotionalRecommendations from '../components/EmotionalRecommendations';
+import HelpButton from '../components/HelpButton';
+import { HELP_CONTENTS } from '../utils/helpContents';
 
 // --- Registro de componentes de Chart.js ---
 ChartJS.register(
@@ -280,6 +282,11 @@ export default function Dashboard() {
   // --- Render principal ---
   return (
     <div>
+      {/* Botón de ayuda */}
+      <div className="mb-3">
+        <HelpButton section="dashboard" helpContent={HELP_CONTENTS.dashboard} />
+      </div>
+
       {/* Encabezado con saludo y saldo */}
       <div 
         className="d-flex justify-content-between align-items-center mb-4 flex-wrap p-4"
