@@ -5,7 +5,7 @@ export default function Layout({ children, withSidebar = true }) {
       style={{
         minHeight: "100vh",
         background: "var(--bg-secondary)",
-        marginLeft: withSidebar ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed-width)',
+        marginLeft: withSidebar ? 'var(--sidebar-width)' : 0,
         marginTop: 'var(--navbar-height)',
         transition: "margin var(--transition-base)",
         paddingTop: 'var(--spacing-lg)'

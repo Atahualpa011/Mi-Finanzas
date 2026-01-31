@@ -25,7 +25,7 @@ export default function Navbar({ onAuthChange, sidebarExpanded }) {
         boxShadow: 'var(--shadow-sm)',
         position: 'fixed',
         top: 0,
-        left: sidebarExpanded ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed-width)',
+        left: isAuth ? (sidebarExpanded ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed-width)') : 0,
         right: 0,
         zIndex: 1030,
         transition: 'left var(--transition-base)'
