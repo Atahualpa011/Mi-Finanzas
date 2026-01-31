@@ -6,7 +6,7 @@ export default function GroupBudgets({ groupId }) {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     amount: '',
     period: 'monthly',
@@ -36,15 +36,20 @@ export default function GroupBudgets({ groupId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.amount || !formData.startDate) {
       alert('Por favor completa todos los campos requeridos');
       return;
     }
 
+    if (formData.endDate && new Date(formData.endDate) < new Date(formData.startDate)) {
+      alert('La fecha de fin no puede ser anterior a la fecha de inicio');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      const url = editingBudget 
+      const url = editingBudget
         ? `/api/groups/${groupId}/budgets/${editingBudget.id}`
         : `/api/groups/${groupId}/budgets`;
       const method = editingBudget ? 'PUT' : 'POST';
@@ -136,13 +141,13 @@ export default function GroupBudgets({ groupId }) {
   if (loading) {
     return (
       <div className="text-center" style={{ padding: 'var(--spacing-xl)' }}>
-        <div 
-          className="spinner-border" 
-          style={{ 
-            width: '2rem', 
+        <div
+          className="spinner-border"
+          style={{
+            width: '2rem',
             height: '2rem',
             color: 'var(--primary)'
-          }} 
+          }}
           role="status"
         >
           <span className="visually-hidden">Cargando...</span>
@@ -152,7 +157,7 @@ export default function GroupBudgets({ groupId }) {
   }
 
   return (
-    <div 
+    <div
       className="card"
       style={{
         border: '1px solid var(--border-light)',
@@ -161,7 +166,7 @@ export default function GroupBudgets({ groupId }) {
         marginBottom: 'var(--spacing-xl)'
       }}
     >
-      <div 
+      <div
         className="card-header d-flex justify-content-between align-items-center"
         style={{
           backgroundColor: 'var(--bg-secondary)',
@@ -169,8 +174,8 @@ export default function GroupBudgets({ groupId }) {
           padding: 'var(--spacing-lg)'
         }}
       >
-        <h5 
-          style={{ 
+        <h5
+          style={{
             marginBottom: 0,
             fontWeight: '600',
             color: 'var(--text-primary)',
@@ -180,7 +185,7 @@ export default function GroupBudgets({ groupId }) {
           <i className="bi bi-wallet2 me-2" style={{ color: 'var(--primary)' }}></i>
           Presupuestos del Grupo
         </h5>
-        <button 
+        <button
           className="btn"
           style={{
             backgroundColor: 'var(--primary)',
@@ -211,7 +216,7 @@ export default function GroupBudgets({ groupId }) {
       </div>
       <div className="card-body" style={{ padding: 'var(--spacing-xl)' }}>
         {budgets.length === 0 ? (
-          <div 
+          <div
             className="text-center"
             style={{
               padding: 'var(--spacing-2xl)',
@@ -220,10 +225,10 @@ export default function GroupBudgets({ groupId }) {
               border: '1px solid var(--info)'
             }}
           >
-            <i 
-              className="bi bi-wallet2" 
-              style={{ 
-                fontSize: '3rem', 
+            <i
+              className="bi bi-wallet2"
+              style={{
+                fontSize: '3rem',
                 color: 'var(--info)',
                 marginBottom: 'var(--spacing-md)'
               }}
@@ -236,7 +241,7 @@ export default function GroupBudgets({ groupId }) {
           <div className="row g-3">
             {budgets.map(budget => (
               <div key={budget.id} className="col-md-6">
-                <div 
+                <div
                   style={{
                     border: '1px solid var(--border-light)',
                     borderRadius: 'var(--radius-md)',
@@ -253,8 +258,8 @@ export default function GroupBudgets({ groupId }) {
                 >
                   <div className="d-flex justify-content-between align-items-start mb-3">
                     <div>
-                      <span 
-                        className="badge" 
+                      <span
+                        className="badge"
                         style={{
                           backgroundColor: 'var(--bg-secondary)',
                           color: 'var(--text-primary)',
@@ -267,8 +272,8 @@ export default function GroupBudgets({ groupId }) {
                         {getPeriodLabel(budget.period)}
                       </span>
                       {budget.status === 'exceeded' && (
-                        <span 
-                          className="badge" 
+                        <span
+                          className="badge"
                           style={{
                             backgroundColor: 'var(--danger)',
                             color: 'white',
@@ -280,8 +285,8 @@ export default function GroupBudgets({ groupId }) {
                         </span>
                       )}
                       {budget.status === 'warning' && (
-                        <span 
-                          className="badge" 
+                        <span
+                          className="badge"
                           style={{
                             backgroundColor: 'var(--warning)',
                             color: 'white',
@@ -293,8 +298,8 @@ export default function GroupBudgets({ groupId }) {
                         </span>
                       )}
                       {budget.status === 'ok' && (
-                        <span 
-                          className="badge" 
+                        <span
+                          className="badge"
                           style={{
                             backgroundColor: 'var(--success)',
                             color: 'white',
@@ -307,8 +312,8 @@ export default function GroupBudgets({ groupId }) {
                       )}
                     </div>
                     <div className="dropdown" style={{ overflow: 'visible' }}>
-                      <button 
-                        className="btn btn-sm" 
+                      <button
+                        className="btn btn-sm"
                         style={{
                           backgroundColor: 'transparent',
                           border: 'none',
@@ -323,8 +328,8 @@ export default function GroupBudgets({ groupId }) {
                       </button>
                       <ul className="dropdown-menu">
                         <li>
-                          <button 
-                            className="dropdown-item" 
+                          <button
+                            className="dropdown-item"
                             onClick={() => handleEdit(budget)}
                             style={{ fontSize: '0.875rem' }}
                           >
@@ -333,8 +338,8 @@ export default function GroupBudgets({ groupId }) {
                           </button>
                         </li>
                         <li>
-                          <button 
-                            className="dropdown-item text-danger" 
+                          <button
+                            className="dropdown-item text-danger"
                             onClick={() => handleDelete(budget.id)}
                             style={{ fontSize: '0.875rem' }}
                           >
@@ -348,9 +353,9 @@ export default function GroupBudgets({ groupId }) {
 
                   {/* Montos */}
                   <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                    <div 
-                      style={{ 
-                        display: 'flex', 
+                    <div
+                      style={{
+                        display: 'flex',
                         justifyContent: 'space-between',
                         marginBottom: 'var(--spacing-xs)',
                         fontSize: '0.875rem'
@@ -361,19 +366,19 @@ export default function GroupBudgets({ groupId }) {
                         ${budget.total_spent.toLocaleString('es-AR')} / ${budget.budget_amount.toLocaleString('es-AR')}
                       </span>
                     </div>
-                    
+
                     {/* Barra de progreso */}
-                    <div 
-                      className="progress" 
-                      style={{ 
+                    <div
+                      className="progress"
+                      style={{
                         height: '24px',
                         backgroundColor: 'var(--bg-secondary)',
                         borderRadius: 'var(--radius-md)'
                       }}
                     >
-                      <div 
+                      <div
                         className="progress-bar"
-                        style={{ 
+                        style={{
                           width: `${Math.min(budget.percentage_used, 100)}%`,
                           backgroundColor: budget.status === 'exceeded' ? 'var(--danger)' : budget.status === 'warning' ? 'var(--warning)' : 'var(--success)',
                           fontSize: '0.75rem',
@@ -390,9 +395,9 @@ export default function GroupBudgets({ groupId }) {
 
                   {/* Info adicional */}
                   <div style={{ fontSize: '0.875rem' }}>
-                    <div 
-                      style={{ 
-                        display: 'flex', 
+                    <div
+                      style={{
+                        display: 'flex',
                         justifyContent: 'space-between',
                         marginBottom: 'var(--spacing-xs)',
                         color: 'var(--text-secondary)'
@@ -406,9 +411,9 @@ export default function GroupBudgets({ groupId }) {
                         {budget.expense_count}
                       </span>
                     </div>
-                    <div 
-                      style={{ 
-                        display: 'flex', 
+                    <div
+                      style={{
+                        display: 'flex',
                         justifyContent: 'space-between',
                         marginBottom: 'var(--spacing-xs)',
                         color: 'var(--text-secondary)'
@@ -418,8 +423,8 @@ export default function GroupBudgets({ groupId }) {
                         <i className="bi bi-piggy-bank me-1"></i>
                         Restante:
                       </span>
-                      <span 
-                        style={{ 
+                      <span
+                        style={{
                           fontWeight: budget.remaining < 0 ? '700' : '500',
                           color: budget.remaining < 0 ? 'var(--danger)' : 'var(--text-primary)'
                         }}
@@ -427,9 +432,9 @@ export default function GroupBudgets({ groupId }) {
                         ${Math.abs(budget.remaining).toLocaleString('es-AR')}
                       </span>
                     </div>
-                    <div 
-                      style={{ 
-                        display: 'flex', 
+                    <div
+                      style={{
+                        display: 'flex',
                         justifyContent: 'space-between',
                         color: 'var(--text-secondary)'
                       }}
@@ -453,9 +458,9 @@ export default function GroupBudgets({ groupId }) {
 
       {/* Modal */}
       {showModal && (
-        <div 
-          className="modal d-block" 
-          tabIndex="-1" 
+        <div
+          className="modal d-block"
+          tabIndex="-1"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
           onClick={(e) => {
             if (e.target.className.includes('modal d-block')) {
@@ -465,7 +470,7 @@ export default function GroupBudgets({ groupId }) {
           }}
         >
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-            <div 
+            <div
               className="modal-content"
               style={{
                 borderRadius: 'var(--radius-lg)',
@@ -473,7 +478,7 @@ export default function GroupBudgets({ groupId }) {
                 boxShadow: 'var(--shadow-xl)'
               }}
             >
-              <div 
+              <div
                 className="modal-header"
                 style={{
                   borderBottom: '1px solid var(--border-light)',
@@ -481,9 +486,9 @@ export default function GroupBudgets({ groupId }) {
                   backgroundColor: 'var(--bg-secondary)'
                 }}
               >
-                <h5 
-                  className="modal-title" 
-                  style={{ 
+                <h5
+                  className="modal-title"
+                  style={{
                     fontWeight: '600',
                     color: 'var(--text-primary)'
                   }}
@@ -491,20 +496,20 @@ export default function GroupBudgets({ groupId }) {
                   <i className="bi bi-wallet2 me-2" style={{ color: 'var(--primary)' }}></i>
                   {editingBudget ? 'Editar' : 'Nuevo'} Presupuesto Grupal
                 </h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
+                <button
+                  type="button"
+                  className="btn-close"
                   onClick={() => { setShowModal(false); resetForm(); }}
                 ></button>
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="modal-body" style={{ padding: 'var(--spacing-xl)' }}>
                   <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-                    <label 
-                      className="form-label" 
-                      style={{ 
-                        fontWeight: '600', 
-                        color: 'var(--text-primary)', 
+                    <label
+                      className="form-label"
+                      style={{
+                        fontWeight: '600',
+                        color: 'var(--text-primary)',
                         fontSize: '0.875rem',
                         marginBottom: 'var(--spacing-xs)'
                       }}
@@ -512,7 +517,7 @@ export default function GroupBudgets({ groupId }) {
                       <i className="bi bi-cash-stack me-1"></i>
                       Monto Total <span style={{ color: 'var(--danger)' }}>*</span>
                     </label>
-                    <input 
+                    <input
                       type="number"
                       step="0.01"
                       className="form-control"
@@ -535,11 +540,11 @@ export default function GroupBudgets({ groupId }) {
                   </div>
 
                   <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-                    <label 
-                      className="form-label" 
-                      style={{ 
-                        fontWeight: '600', 
-                        color: 'var(--text-primary)', 
+                    <label
+                      className="form-label"
+                      style={{
+                        fontWeight: '600',
+                        color: 'var(--text-primary)',
                         fontSize: '0.875rem',
                         marginBottom: 'var(--spacing-xs)'
                       }}
@@ -547,7 +552,7 @@ export default function GroupBudgets({ groupId }) {
                       <i className="bi bi-calendar-event me-1"></i>
                       Período <span style={{ color: 'var(--danger)' }}>*</span>
                     </label>
-                    <select 
+                    <select
                       className="form-select"
                       style={{
                         border: '1px solid var(--border-light)',
@@ -569,11 +574,11 @@ export default function GroupBudgets({ groupId }) {
 
                   <div className="row">
                     <div className="col-md-6" style={{ marginBottom: 'var(--spacing-lg)' }}>
-                      <label 
-                        className="form-label" 
-                        style={{ 
-                          fontWeight: '600', 
-                          color: 'var(--text-primary)', 
+                      <label
+                        className="form-label"
+                        style={{
+                          fontWeight: '600',
+                          color: 'var(--text-primary)',
                           fontSize: '0.875rem',
                           marginBottom: 'var(--spacing-xs)'
                         }}
@@ -581,7 +586,7 @@ export default function GroupBudgets({ groupId }) {
                         <i className="bi bi-calendar3 me-1"></i>
                         Fecha de Inicio <span style={{ color: 'var(--danger)' }}>*</span>
                       </label>
-                      <input 
+                      <input
                         type="date"
                         className="form-control"
                         style={{
@@ -598,11 +603,11 @@ export default function GroupBudgets({ groupId }) {
                       />
                     </div>
                     <div className="col-md-6" style={{ marginBottom: 'var(--spacing-lg)' }}>
-                      <label 
-                        className="form-label" 
-                        style={{ 
-                          fontWeight: '600', 
-                          color: 'var(--text-primary)', 
+                      <label
+                        className="form-label"
+                        style={{
+                          fontWeight: '600',
+                          color: 'var(--text-primary)',
                           fontSize: '0.875rem',
                           marginBottom: 'var(--spacing-xs)'
                         }}
@@ -610,7 +615,7 @@ export default function GroupBudgets({ groupId }) {
                         <i className="bi bi-calendar-check me-1"></i>
                         Fecha de Fin
                       </label>
-                      <input 
+                      <input
                         type="date"
                         className="form-control"
                         style={{
@@ -628,11 +633,11 @@ export default function GroupBudgets({ groupId }) {
                   </div>
 
                   <div>
-                    <label 
-                      className="form-label" 
-                      style={{ 
-                        fontWeight: '600', 
-                        color: 'var(--text-primary)', 
+                    <label
+                      className="form-label"
+                      style={{
+                        fontWeight: '600',
+                        color: 'var(--text-primary)',
                         fontSize: '0.875rem',
                         marginBottom: 'var(--spacing-sm)'
                       }}
@@ -640,7 +645,7 @@ export default function GroupBudgets({ groupId }) {
                       <i className="bi bi-exclamation-triangle me-1"></i>
                       Umbral de Alerta ({formData.alertThreshold}%)
                     </label>
-                    <input 
+                    <input
                       type="range"
                       className="form-range"
                       min="50"
@@ -654,7 +659,7 @@ export default function GroupBudgets({ groupId }) {
                     </small>
                   </div>
                 </div>
-                <div 
+                <div
                   className="modal-footer"
                   style={{
                     borderTop: '1px solid var(--border-light)',
@@ -662,8 +667,8 @@ export default function GroupBudgets({ groupId }) {
                     backgroundColor: 'var(--bg-secondary)'
                   }}
                 >
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="btn"
                     style={{
                       backgroundColor: 'transparent',
@@ -686,8 +691,8 @@ export default function GroupBudgets({ groupId }) {
                   >
                     Cancelar
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn"
                     style={{
                       backgroundColor: 'var(--primary)',

@@ -97,6 +97,17 @@ async function deleteBudget(budgetId, userId) {
 
 // Obtener gastos del presupuesto en el período actual
 async function getBudgetExpenses(userId, categoryId, startDate, endDate, emotionFilter = null) {
+  // Formatear fechas a YYYY-MM-DD si son objetos Date
+  const formattedStartDate = startDate instanceof Date 
+    ? startDate.toISOString().split('T')[0] 
+    : (typeof startDate === 'string' ? startDate.split('T')[0] : startDate);
+  
+  const formattedEndDate = endDate 
+    ? (endDate instanceof Date 
+        ? endDate.toISOString().split('T')[0] 
+        : (typeof endDate === 'string' ? endDate.split('T')[0] : endDate))
+    : null;
+  
   // Si es un presupuesto emocional, filtrar por emoción
   if (emotionFilter) {
     const [rows] = await db.query(`
@@ -118,8 +129,8 @@ async function getBudgetExpenses(userId, categoryId, startDate, endDate, emotion
         )
         ${categoryId ? 'AND t.category_id = ?' : ''}
     `, categoryId 
-      ? [userId, startDate, endDate, endDate, emotionFilter, emotionFilter, emotionFilter, emotionFilter, categoryId]
-      : [userId, startDate, endDate, endDate, emotionFilter, emotionFilter, emotionFilter, emotionFilter]
+      ? [userId, formattedStartDate, formattedEndDate, formattedEndDate, emotionFilter, emotionFilter, emotionFilter, emotionFilter, categoryId]
+      : [userId, formattedStartDate, formattedEndDate, formattedEndDate, emotionFilter, emotionFilter, emotionFilter, emotionFilter]
     );
     return {
       totalSpent: rows[0]?.total_spent || 0,
@@ -138,7 +149,12 @@ async function getBudgetExpenses(userId, categoryId, startDate, endDate, emotion
       AND type = 'expense'
       AND date >= ? 
       AND (? IS NULL OR date <= ?)
-  `, [userId, categoryId, startDate, endDate, endDate]);
+  `, [userId, categoryId, formattedStartDate, formattedEndDate, formattedEndDate]);
+  
+  // Debug log
+  console.log('getBudgetExpenses - userId:', userId, 'categoryId:', categoryId, 'startDate:', formattedStartDate, 'endDate:', formattedEndDate);
+  console.log('getBudgetExpenses - totalSpent:', rows[0]?.total_spent, 'transactionCount:', rows[0]?.transaction_count);
+  
   return {
     totalSpent: rows[0]?.total_spent || 0,
     transactionCount: rows[0]?.transaction_count || 0

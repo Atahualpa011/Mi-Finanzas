@@ -12,7 +12,7 @@ export default function Budgets() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     categoryId: '',
@@ -69,26 +69,31 @@ export default function Budgets() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validaciones según tipo de presupuesto
     if (formData.isEmotional && !formData.emotionFilter) {
       alert('Por favor selecciona una emoción para el presupuesto emocional');
       return;
     }
-    
+
     if (!formData.isEmotional && !formData.categoryId) {
       alert('Por favor selecciona una categoría para el presupuesto normal');
       return;
     }
-    
+
     if (!formData.amount || !formData.startDate) {
       alert('Por favor completa todos los campos requeridos');
       return;
     }
 
+    if (formData.endDate && new Date(formData.endDate) < new Date(formData.startDate)) {
+      alert('La fecha de fin no puede ser anterior a la fecha de inicio');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      const url = editingBudget 
+      const url = editingBudget
         ? `/api/budgets/${editingBudget.id}`
         : '/api/budgets';
       const method = editingBudget ? 'PUT' : 'POST';
@@ -212,10 +217,10 @@ export default function Budgets() {
 
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h2 
-            className="mb-1" 
-            style={{ 
-              fontWeight: '700', 
+          <h2
+            className="mb-1"
+            style={{
+              fontWeight: '700',
               color: 'var(--text-primary)',
               fontSize: '1.75rem'
             }}
@@ -227,42 +232,45 @@ export default function Budgets() {
             Controla tus gastos por categoría
           </p>
         </div>
-        <button 
-          className="btn"
-          style={{
-            backgroundColor: 'var(--primary)',
-            color: 'white',
-            border: 'none',
-            borderRadius: 'var(--radius-md)',
-            padding: 'var(--spacing-sm) var(--spacing-lg)',
-            fontSize: '0.95rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all var(--transition-fast)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-          onClick={handleNewBudget}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = 'var(--primary-dark)';
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = 'var(--shadow-md)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'var(--primary)';
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = 'var(--shadow-sm)';
-          }}
-        >
-          <i className="bi bi-plus-circle me-2"></i>
-          Nuevo Presupuesto
-        </button>
+        <div className="d-flex gap-2">
+
+          <button
+            className="btn"
+            style={{
+              backgroundColor: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--spacing-sm) var(--spacing-lg)',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+            onClick={handleNewBudget}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = 'var(--primary-dark)';
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = 'var(--shadow-md)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'var(--primary)';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = 'var(--shadow-sm)';
+            }}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Nuevo Presupuesto
+          </button>
+        </div>
       </div>
 
       {/* Alertas de presupuestos */}
       <BudgetAlerts />
 
       {budgets.length === 0 ? (
-        <div 
+        <div
           className="alert"
           style={{
             backgroundColor: 'var(--info-light)',
@@ -285,7 +293,7 @@ export default function Budgets() {
         <div className="row g-4">
           {budgets.map(budget => (
             <div key={budget.id} className="col-md-6 col-lg-4">
-              <div 
+              <div
                 className="card h-100"
                 style={{
                   border: '1px solid var(--border-light)',
@@ -303,7 +311,7 @@ export default function Budgets() {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <div 
+                <div
                   className="card-header d-flex justify-content-between align-items-center"
                   style={{
                     backgroundColor: 'var(--bg-secondary)',
@@ -313,9 +321,9 @@ export default function Budgets() {
                 >
                   <div>
                     {budget.is_emotional ? (
-                      <span 
-                        className="badge rounded-pill me-2" 
-                        style={{ 
+                      <span
+                        className="badge rounded-pill me-2"
+                        style={{
                           backgroundColor: '#6f42c1',
                           color: 'white',
                           padding: '0.375rem 0.875rem',
@@ -327,9 +335,9 @@ export default function Budgets() {
                         {budget.emotion_filter}
                       </span>
                     ) : (
-                      <span 
-                        className="badge rounded-pill me-2" 
-                        style={{ 
+                      <span
+                        className="badge rounded-pill me-2"
+                        style={{
                           backgroundColor: budget.category_color || '#6c757d',
                           color: 'white',
                           padding: '0.375rem 0.875rem',
@@ -341,7 +349,7 @@ export default function Budgets() {
                         {budget.category_name}
                       </span>
                     )}
-                    <span 
+                    <span
                       className="badge"
                       style={{
                         backgroundColor: 'var(--primary-light)',
@@ -356,7 +364,7 @@ export default function Budgets() {
                     </span>
                   </div>
                   <div className="dropdown">
-                    <button 
+                    <button
                       className="btn btn-sm"
                       data-bs-toggle="dropdown"
                       style={{
@@ -372,7 +380,7 @@ export default function Budgets() {
                     </button>
                     <ul className="dropdown-menu dropdown-menu-end">
                       <li>
-                        <button 
+                        <button
                           className="dropdown-item"
                           onClick={() => handleEdit(budget)}
                           style={{
@@ -385,7 +393,7 @@ export default function Budgets() {
                         </button>
                       </li>
                       <li>
-                        <button 
+                        <button
                           className="dropdown-item"
                           onClick={() => handleDelete(budget.id)}
                           style={{
@@ -411,26 +419,26 @@ export default function Budgets() {
                         ${budget.total_spent.toLocaleString('es-AR')} / ${budget.budget_amount.toLocaleString('es-AR')}
                       </span>
                     </div>
-                    
+
                     {/* Barra de progreso */}
-                    <div 
-                      className="progress" 
-                      style={{ 
+                    <div
+                      className="progress"
+                      style={{
                         height: '24px',
                         backgroundColor: 'var(--bg-secondary)',
                         borderRadius: 'var(--radius-md)',
                         overflow: 'hidden'
                       }}
                     >
-                      <div 
+                      <div
                         className="progress-bar"
                         role="progressbar"
-                        style={{ 
+                        style={{
                           width: `${Math.min(budget.percentage_used, 100)}%`,
-                          backgroundColor: 
+                          backgroundColor:
                             budget.status === 'exceeded' ? 'var(--danger)' :
-                            budget.status === 'warning' ? 'var(--warning)' : 
-                            'var(--success)',
+                              budget.status === 'warning' ? 'var(--warning)' :
+                                'var(--success)',
                           transition: 'width var(--transition-base)',
                           display: 'flex',
                           alignItems: 'center',
@@ -447,7 +455,7 @@ export default function Budgets() {
 
                   {/* Estado */}
                   {budget.status === 'exceeded' && (
-                    <div 
+                    <div
                       className="alert py-2 mb-3"
                       style={{
                         backgroundColor: 'var(--danger-light)',
@@ -466,9 +474,9 @@ export default function Budgets() {
                       </small>
                     </div>
                   )}
-                  
+
                   {budget.status === 'warning' && (
-                    <div 
+                    <div
                       className="alert py-2 mb-3"
                       style={{
                         backgroundColor: 'var(--warning-light)',
@@ -489,7 +497,7 @@ export default function Budgets() {
                   )}
 
                   {budget.status === 'ok' && (
-                    <div 
+                    <div
                       className="alert py-2 mb-3"
                       style={{
                         backgroundColor: 'var(--success-light)',
@@ -552,7 +560,7 @@ export default function Budgets() {
         <>
           <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-dialog-centered">
-              <div 
+              <div
                 className="modal-content"
                 style={{
                   border: 'none',
@@ -560,7 +568,7 @@ export default function Budgets() {
                   boxShadow: 'var(--shadow-xl)'
                 }}
               >
-                <div 
+                <div
                   className="modal-header"
                   style={{
                     backgroundColor: 'var(--bg-secondary)',
@@ -569,7 +577,7 @@ export default function Budgets() {
                     padding: 'var(--spacing-lg)'
                   }}
                 >
-                  <h5 
+                  <h5
                     className="modal-title"
                     style={{
                       fontWeight: '600',
@@ -580,9 +588,9 @@ export default function Budgets() {
                     <i className={`bi ${editingBudget ? 'bi-pencil' : 'bi-plus-circle'} me-2`} style={{ color: 'var(--primary)' }}></i>
                     {editingBudget ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
                   </h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => { setShowModal(false); resetForm(); }}
                   ></button>
                 </div>
@@ -591,23 +599,23 @@ export default function Budgets() {
                     {/* Tipo de presupuesto (NUEVO) */}
                     <div className="mb-3">
                       <div className="form-check" style={{ padding: 'var(--spacing-sm)' }}>
-                        <input 
-                          className="form-check-input" 
-                          type="checkbox" 
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
                           id="isEmotionalCheck"
                           checked={formData.isEmotional}
-                          onChange={(e) => setFormData({ 
-                            ...formData, 
+                          onChange={(e) => setFormData({
+                            ...formData,
                             isEmotional: e.target.checked,
                             categoryId: e.target.checked ? '' : formData.categoryId,
                             emotionFilter: e.target.checked ? formData.emotionFilter : ''
                           })}
                           style={{ cursor: 'pointer' }}
                         />
-                        <label 
-                          className="form-check-label" 
+                        <label
+                          className="form-check-label"
                           htmlFor="isEmotionalCheck"
-                          style={{ 
+                          style={{
                             cursor: 'pointer',
                             fontWeight: '600',
                             color: 'var(--text-primary)',
@@ -626,11 +634,11 @@ export default function Budgets() {
                     {/* Selector de emoción (solo si es emocional) */}
                     {formData.isEmotional && (
                       <div className="mb-3">
-                        <label 
-                          className="form-label" 
-                          style={{ 
-                            fontWeight: '600', 
-                            color: 'var(--text-primary)', 
+                        <label
+                          className="form-label"
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--text-primary)',
                             fontSize: '0.875rem',
                             marginBottom: 'var(--spacing-xs)'
                           }}
@@ -638,7 +646,7 @@ export default function Budgets() {
                           <i className="bi bi-emoji-smile me-1" style={{ color: '#6f42c1' }}></i>
                           Emoción a Controlar <span style={{ color: 'var(--danger)' }}>*</span>
                         </label>
-                        <select 
+                        <select
                           className="form-select"
                           style={{
                             border: '2px solid #6f42c1',
@@ -668,11 +676,11 @@ export default function Budgets() {
                     {/* Categoría (solo si NO es emocional) */}
                     {!formData.isEmotional && (
                       <div className="mb-3">
-                        <label 
-                          className="form-label" 
-                          style={{ 
-                            fontWeight: '600', 
-                            color: 'var(--text-primary)', 
+                        <label
+                          className="form-label"
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--text-primary)',
                             fontSize: '0.875rem',
                             marginBottom: 'var(--spacing-xs)'
                           }}
@@ -680,7 +688,7 @@ export default function Budgets() {
                           <i className="bi bi-tag me-1"></i>
                           Categoría <span style={{ color: 'var(--danger)' }}>*</span>
                         </label>
-                        <select 
+                        <select
                           className="form-select"
                           style={{
                             border: '1px solid var(--border-light)',
@@ -705,11 +713,11 @@ export default function Budgets() {
 
                     {/* Monto */}
                     <div className="mb-3">
-                      <label 
-                        className="form-label" 
-                        style={{ 
-                          fontWeight: '600', 
-                          color: 'var(--text-primary)', 
+                      <label
+                        className="form-label"
+                        style={{
+                          fontWeight: '600',
+                          color: 'var(--text-primary)',
                           fontSize: '0.875rem',
                           marginBottom: 'var(--spacing-xs)'
                         }}
@@ -717,7 +725,7 @@ export default function Budgets() {
                         <i className="bi bi-currency-dollar me-1"></i>
                         Monto del Presupuesto <span style={{ color: 'var(--danger)' }}>*</span>
                       </label>
-                      <input 
+                      <input
                         type="number"
                         step="0.01"
                         className="form-control"
@@ -739,11 +747,11 @@ export default function Budgets() {
 
                     {/* Período */}
                     <div className="mb-3">
-                      <label 
-                        className="form-label" 
-                        style={{ 
-                          fontWeight: '600', 
-                          color: 'var(--text-primary)', 
+                      <label
+                        className="form-label"
+                        style={{
+                          fontWeight: '600',
+                          color: 'var(--text-primary)',
                           fontSize: '0.875rem',
                           marginBottom: 'var(--spacing-xs)'
                         }}
@@ -751,7 +759,7 @@ export default function Budgets() {
                         <i className="bi bi-calendar-range me-1"></i>
                         Período <span style={{ color: 'var(--danger)' }}>*</span>
                       </label>
-                      <select 
+                      <select
                         className="form-select"
                         style={{
                           border: '1px solid var(--border-light)',
@@ -775,11 +783,11 @@ export default function Budgets() {
                     {/* Fechas */}
                     <div className="row">
                       <div className="col-md-6 mb-3">
-                        <label 
-                          className="form-label" 
-                          style={{ 
-                            fontWeight: '600', 
-                            color: 'var(--text-primary)', 
+                        <label
+                          className="form-label"
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--text-primary)',
                             fontSize: '0.875rem',
                             marginBottom: 'var(--spacing-xs)'
                           }}
@@ -787,7 +795,7 @@ export default function Budgets() {
                           <i className="bi bi-calendar3 me-1"></i>
                           Fecha de Inicio <span style={{ color: 'var(--danger)' }}>*</span>
                         </label>
-                        <input 
+                        <input
                           type="date"
                           className="form-control"
                           style={{
@@ -805,11 +813,11 @@ export default function Budgets() {
                         />
                       </div>
                       <div className="col-md-6 mb-3">
-                        <label 
-                          className="form-label" 
-                          style={{ 
-                            fontWeight: '600', 
-                            color: 'var(--text-primary)', 
+                        <label
+                          className="form-label"
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--text-primary)',
                             fontSize: '0.875rem',
                             marginBottom: 'var(--spacing-xs)'
                           }}
@@ -817,7 +825,7 @@ export default function Budgets() {
                           <i className="bi bi-calendar-check me-1"></i>
                           Fecha de Fin
                         </label>
-                        <input 
+                        <input
                           type="date"
                           className="form-control"
                           style={{
@@ -840,11 +848,11 @@ export default function Budgets() {
 
                     {/* Umbral de alerta */}
                     <div className="mb-3">
-                      <label 
-                        className="form-label" 
-                        style={{ 
-                          fontWeight: '600', 
-                          color: 'var(--text-primary)', 
+                      <label
+                        className="form-label"
+                        style={{
+                          fontWeight: '600',
+                          color: 'var(--text-primary)',
                           fontSize: '0.875rem',
                           marginBottom: 'var(--spacing-xs)'
                         }}
@@ -852,7 +860,7 @@ export default function Budgets() {
                         <i className="bi bi-bell me-1"></i>
                         Umbral de Alerta ({formData.alertThreshold}%)
                       </label>
-                      <input 
+                      <input
                         type="range"
                         className="form-range"
                         min="50"
@@ -867,7 +875,7 @@ export default function Budgets() {
                       </small>
                     </div>
                   </div>
-                  <div 
+                  <div
                     className="modal-footer"
                     style={{
                       backgroundColor: 'var(--bg-secondary)',
@@ -876,8 +884,8 @@ export default function Budgets() {
                       padding: 'var(--spacing-lg)'
                     }}
                   >
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-secondary-custom"
                       style={{
                         padding: '0.5rem 1.25rem',
@@ -890,8 +898,8 @@ export default function Budgets() {
                     >
                       Cancelar
                     </button>
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="btn"
                       style={{
                         backgroundColor: 'var(--primary)',
