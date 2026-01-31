@@ -320,7 +320,6 @@ export default function Gamification() {
               {/* Recent Achievements */}
               <div className="col-12 mb-4">
                 <div className="d-flex align-items-center mb-3">
-                  <i className="bi bi-stars fs-4 text-warning me-2"></i>
                   <h4 className="mb-0 fw-semibold">Logros Recientes</h4>
                 </div>
                 <div className="row">
