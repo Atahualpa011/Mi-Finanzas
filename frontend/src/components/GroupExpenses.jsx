@@ -4,6 +4,26 @@ export default function GroupExpenses({ groupId, refresh }) {
   // --- Estado principal ---
   const [expenses, setExpenses] = useState([]); // Lista de gastos del grupo
 
+  // --- Helpers de formato ---
+  const formatDate = (value) => {
+    if (!value) return '-';
+
+    const datePart = String(value).split('T')[0];
+    const [year, month, day] = datePart.split('-');
+
+    if (year && month && day) {
+      return `${day}/${month}/${year}`;
+    }
+
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString('es-AR');
+  };
+
+  const formatTime = (value) => {
+    if (!value) return '';
+    return String(value).slice(0, 5);
+  };
+
   // --- Cargar gastos del grupo al montar o cuando cambian groupId/refresh ---
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -140,7 +160,7 @@ export default function GroupExpenses({ groupId, refresh }) {
                         }}
                       >
                         <i className="bi bi-calendar3 me-1" style={{ color: 'var(--info)' }}></i>
-                        {e.date}
+                        {formatDate(e.date)} {formatTime(e.time)}
                       </small>
                     </div>
                   </div>

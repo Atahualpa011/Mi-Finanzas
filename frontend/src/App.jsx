@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar          from './components/Navbar';
 import ProtectedRoute  from './components/ProtectedRoute';
 import Sidebar         from './components/Sidebar';
@@ -43,9 +43,26 @@ function App() {
       <Layout withSidebar={isLoggedIn ? sidebarExpanded : false}>
         <Routes>
           {/* Rutas públicas */}
-          <Route path="/"        element={<Landing />} />
-          <Route path="/login"   element={<Login onAuthChange={() => setAuthChanged(a => a + 1)} />} />
-          <Route path="/register" element={<Register onAuthChange={() => setAuthChanged(a => a + 1)} />} />
+          <Route
+            path="/"
+            element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Landing />}
+          />
+          <Route
+            path="/login"
+            element={
+              isLoggedIn
+                ? <Navigate to="/dashboard" replace />
+                : <Login onAuthChange={() => setAuthChanged(a => a + 1)} />
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              isLoggedIn
+                ? <Navigate to="/dashboard" replace />
+                : <Register onAuthChange={() => setAuthChanged(a => a + 1)} />
+            }
+          />
           {/* Rutas protegidas (requieren login) */}
           <Route
             path="/dashboard"
@@ -146,5 +163,4 @@ function App() {
 }
 
 export default App;
-
 

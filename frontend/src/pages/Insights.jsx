@@ -127,11 +127,13 @@ export default function Insights() {
 
   // --- Severity badge color ---
   const getSeverityColor = (severity) => {
-    switch (severity) {
+    const normalizedSeverity = String(severity || '').trim().toLowerCase();
+    switch (normalizedSeverity) {
       case 'warning': return 'warning';
       case 'alert': return 'danger';
       case 'info': return 'info';
       case 'positive': return 'success';
+      case 'success': return 'success';
       default: return 'secondary';
     }
   };
@@ -156,13 +158,20 @@ export default function Insights() {
 
   // --- Severity translation ---
   const getSeverityLabel = (severity) => {
+    const normalizedSeverity = String(severity || '').trim().toLowerCase();
     const labels = {
       warning: 'Advertencia',
       alert: 'Alerta',
       info: 'Información',
-      positive: 'Positivo'
+      positive: 'Positivo',
+      success: 'Éxito'
     };
-    return labels[severity] || severity;
+    if (labels[normalizedSeverity]) return labels[normalizedSeverity];
+
+    if (!severity) return 'Sin categoría';
+
+    const raw = String(severity).trim();
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
   };
 
   // --- Format date helper ---

@@ -14,10 +14,12 @@ async function getAllByUser(userId) {
        c.name    AS category,
        t.description,
        e.emotion,
-       e.destination
+       e.destination,
+       i.source
      FROM transactions t
      LEFT JOIN categories c ON t.category_id = c.id
      LEFT JOIN expenses e ON e.transaction_id = t.id AND t.type = 'expense'
+     LEFT JOIN incomes i ON i.transaction_id = t.id AND t.type = 'income'
      WHERE t.user_id = ?
      ORDER BY t.date DESC, t.time DESC`,
     [userId]

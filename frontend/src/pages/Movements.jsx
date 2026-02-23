@@ -11,7 +11,11 @@ export default function Movements() {
   const [modalIndex, setModalIndex] = useState(null); // Índice de la sugerencia seleccionada
   const [autoModalShown, setAutoModalShown] = useState(false);
   const [emotionFilter, setEmotionFilter] = useState('all'); // Filtro de emoción (NUEVO)
+  const [activeMovementTab, setActiveMovementTab] = useState('expense');
+  const [expensePage, setExpensePage] = useState(1);
+  const [incomePage, setIncomePage] = useState(1);
   const { currencyData, CURRENCIES } = useCurrency();     // Hook para obtener símbolo y lista de monedas
+  const ITEMS_PER_PAGE = 25;
 
   // --- Lista de emociones disponibles (NUEVO) ---
   const EMOTIONS = [
@@ -132,6 +136,30 @@ export default function Movements() {
 
   // --- Modal reusable ---
   const modalSuggestion = modalIndex !== null ? suggestions[modalIndex] : null;
+
+  // --- Datos para tablas y paginación ---
+  const expenseTransactions = filterByEmotion(transactions.filter(tx => tx.type === 'expense'));
+  const incomeTransactions = transactions.filter(tx => tx.type === 'income');
+
+  const totalExpensePages = Math.max(1, Math.ceil(expenseTransactions.length / ITEMS_PER_PAGE));
+  const totalIncomePages = Math.max(1, Math.ceil(incomeTransactions.length / ITEMS_PER_PAGE));
+
+  const paginatedExpenseTransactions = expenseTransactions.slice(
+    (expensePage - 1) * ITEMS_PER_PAGE,
+    expensePage * ITEMS_PER_PAGE
+  );
+  const paginatedIncomeTransactions = incomeTransactions.slice(
+    (incomePage - 1) * ITEMS_PER_PAGE,
+    incomePage * ITEMS_PER_PAGE
+  );
+
+  useEffect(() => {
+    setExpensePage(1);
+  }, [emotionFilter, transactions]);
+
+  useEffect(() => {
+    setIncomePage(1);
+  }, [transactions]);
 
   // --- Render principal ---
   return (
@@ -608,21 +636,50 @@ export default function Movements() {
           </div>
         </div>
 
-        <div className="row g-4">
-          {/* Tabla de gastos */}
-          <div className="col-md-6">
-            <div 
-              className="card-custom"
+        <div
+          className="card-custom"
+          style={{
+            padding: 'var(--spacing-lg)',
+            backgroundColor: 'var(--bg-primary)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-light)',
+            boxShadow: 'var(--shadow-sm)'
+          }}
+        >
+          <div className="d-flex flex-wrap gap-2 mb-4">
+            <button
+              type="button"
+              className="btn"
               style={{
-                padding: 'var(--spacing-lg)',
-                backgroundColor: 'var(--bg-primary)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-light)',
-                boxShadow: 'var(--shadow-sm)',
-                height: '100%'
+                border: '1px solid var(--danger)',
+                backgroundColor: activeMovementTab === 'expense' ? 'var(--danger)' : 'transparent',
+                color: activeMovementTab === 'expense' ? 'white' : 'var(--danger)',
+                fontWeight: '600'
               }}
+              onClick={() => setActiveMovementTab('expense')}
             >
-              <h4 
+              <i className="bi bi-arrow-down-circle me-2"></i>
+              Gastos ({expenseTransactions.length})
+            </button>
+            <button
+              type="button"
+              className="btn"
+              style={{
+                border: '1px solid var(--success)',
+                backgroundColor: activeMovementTab === 'income' ? 'var(--success)' : 'transparent',
+                color: activeMovementTab === 'income' ? 'white' : 'var(--success)',
+                fontWeight: '600'
+              }}
+              onClick={() => setActiveMovementTab('income')}
+            >
+              <i className="bi bi-arrow-up-circle me-2"></i>
+              Ingresos ({incomeTransactions.length})
+            </button>
+          </div>
+
+          {activeMovementTab === 'expense' && (
+            <>
+              <h4
                 className="mb-4"
                 style={{
                   fontWeight: '600',
@@ -634,14 +691,14 @@ export default function Movements() {
                 Gastos
                 {emotionFilter !== 'all' && (
                   <span className="ms-2 badge bg-purple" style={{ fontSize: '0.75rem', fontWeight: '500' }}>
-                    {emotionFilter === 'with_emotion' ? 'Con emoción' : 
-                     emotionFilter === 'without_emotion' ? 'Sin emoción' : 
+                    {emotionFilter === 'with_emotion' ? 'Con emoción' :
+                     emotionFilter === 'without_emotion' ? 'Sin emoción' :
                      emotionFilter}
                   </span>
                 )}
               </h4>
-              {filterByEmotion(transactions.filter(tx => tx.type === 'expense')).length === 0 ? (
-                <div 
+              {expenseTransactions.length === 0 ? (
+                <div
                   className="text-center py-5"
                   style={{
                     backgroundColor: 'var(--bg-secondary)',
@@ -655,96 +712,116 @@ export default function Movements() {
                   </p>
                 </div>
               ) : (
-                <div className="table-responsive">
-                  <table className="table-custom mb-0">
-                    <thead>
-                      <tr>
-                        <th>Monto</th>
-                        <th>Moneda</th>
-                        <th>Fecha</th>
-                        <th>Categoría</th>
-                        <th>Descripción</th>
-                        {emotionFilter === 'all' && <th>Emoción</th>}
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filterByEmotion(transactions.filter(tx => tx.type === 'expense')).map(tx => (
-                        <tr key={tx.id}>
-                          <td style={{ fontWeight: '600', color: 'var(--danger)' }}>
-                            {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
-                          </td>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                            {CURRENCIES.find(c => c.code === (tx.currency_code || currencyData.currency || 'ARS'))?.label || 'No especificado'}
-                          </td>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                            {new Date(tx.date).toLocaleString()}
-                          </td>
-                          <td style={{ color: 'var(--text-primary)' }}>
-                            {tx.category || 'Sin categoría'}
-                          </td>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                            {tx.description || '-'}
-                          </td>
-                          {emotionFilter === 'all' && (
-                            <td>
-                              {tx.emotion ? (
-                                <span className="badge bg-purple" style={{ fontSize: '0.7rem' }}>
-                                  {tx.emotion.split(',').map(e => e.trim()).join(', ')}
-                                </span>
-                              ) : (
-                                <span className="text-muted" style={{ fontSize: '0.75rem' }}>-</span>
-                              )}
-                            </td>
-                          )}
-                          <td>
-                            <button
-                              className="btn btn-sm"
-                              style={{
-                                padding: '0.25rem 0.75rem',
-                                fontSize: '0.75rem',
-                                fontWeight: '500',
-                                border: '1px solid var(--danger)',
-                                backgroundColor: 'transparent',
-                                color: 'var(--danger)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                transition: 'all var(--transition-fast)'
-                              }}
-                              onClick={() => handleDelete(tx.id)}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = 'var(--danger-light)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = 'transparent';
-                              }}
-                            >
-                              <i className="bi bi-trash me-1"></i>
-                              Eliminar
-                            </button>
-                          </td>
+                <>
+                  <div className="table-responsive">
+                    <table className="table-custom mb-0">
+                      <thead>
+                        <tr>
+                          <th>Monto</th>
+                          <th>Moneda</th>
+                          <th>Fecha</th>
+                          <th>Categoría</th>
+                          <th>Motivo / Destino</th>
+                          {emotionFilter === 'all' && <th>Emoción</th>}
+                          <th></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {paginatedExpenseTransactions.map(tx => (
+                          <tr key={tx.id}>
+                            <td style={{ fontWeight: '600', color: 'var(--danger)' }}>
+                              {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              {CURRENCIES.find(c => c.code === (tx.currency_code || currencyData.currency || 'ARS'))?.label || 'No especificado'}
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              {new Date(tx.date).toLocaleString()}
+                            </td>
+                            <td style={{ color: 'var(--text-primary)' }}>
+                              {tx.category || 'Sin categoría'}
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              {tx.destination || tx.description || '-'}
+                            </td>
+                            {emotionFilter === 'all' && (
+                              <td>
+                                {tx.emotion ? (
+                                  <span className="badge bg-purple" style={{ fontSize: '0.7rem' }}>
+                                    {tx.emotion.split(',').map(e => e.trim()).join(', ')}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted" style={{ fontSize: '0.75rem' }}>-</span>
+                                )}
+                              </td>
+                            )}
+                            <td>
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  padding: '0.25rem 0.75rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '500',
+                                  border: '1px solid var(--danger)',
+                                  backgroundColor: 'transparent',
+                                  color: 'var(--danger)',
+                                  borderRadius: 'var(--radius-md)',
+                                  cursor: 'pointer',
+                                  transition: 'all var(--transition-fast)'
+                                }}
+                                onClick={() => handleDelete(tx.id)}
+                                onMouseEnter={(e) => {
+                                  e.target.style.backgroundColor = 'var(--danger-light)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = 'transparent';
+                                }}
+                              >
+                                <i className="bi bi-trash me-1"></i>
+                                Eliminar
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                    <small style={{ color: 'var(--text-secondary)' }}>
+                      Mostrando {paginatedExpenseTransactions.length} de {expenseTransactions.length} gastos
+                    </small>
+                    <div className="d-flex align-items-center gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        disabled={expensePage === 1}
+                        onClick={() => setExpensePage(prev => Math.max(1, prev - 1))}
+                      >
+                        <i className="bi bi-chevron-left me-1"></i>
+                        Anterior
+                      </button>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                        Página {expensePage} de {totalExpensePages}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        disabled={expensePage === totalExpensePages}
+                        onClick={() => setExpensePage(prev => Math.min(totalExpensePages, prev + 1))}
+                      >
+                        Siguiente
+                        <i className="bi bi-chevron-right ms-1"></i>
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
-            </div>
-          </div>
-          {/* Tabla de ingresos */}
-          <div className="col-md-6">
-            <div 
-              className="card-custom"
-              style={{
-                padding: 'var(--spacing-lg)',
-                backgroundColor: 'var(--bg-primary)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-light)',
-                boxShadow: 'var(--shadow-sm)',
-                height: '100%'
-              }}
-            >
-              <h4 
+            </>
+          )}
+
+          {activeMovementTab === 'income' && (
+            <>
+              <h4
                 className="mb-4"
                 style={{
                   fontWeight: '600',
@@ -755,8 +832,8 @@ export default function Movements() {
                 <i className="bi bi-arrow-up-circle me-2"></i>
                 Ingresos
               </h4>
-              {transactions.filter(tx => tx.type === 'income').length === 0 ? (
-                <div 
+              {incomeTransactions.length === 0 ? (
+                <div
                   className="text-center py-5"
                   style={{
                     backgroundColor: 'var(--bg-secondary)',
@@ -770,71 +847,102 @@ export default function Movements() {
                   </p>
                 </div>
               ) : (
-                <div className="table-responsive">
-                  <table className="table-custom mb-0">
-                    <thead>
-                      <tr>
-                        <th>Monto</th>
-                        <th>Moneda</th>
-                        <th>Fecha</th>
-                        <th>Categoría</th>
-                        <th>Descripción</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactions.filter(tx => tx.type === 'income').map(tx => (
-                        <tr key={tx.id}>
-                          <td style={{ fontWeight: '600', color: 'var(--success)' }}>
-                            {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
-                          </td>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                            {CURRENCIES.find(c => c.code === (tx.currency_code || currencyData.currency || 'ARS'))?.label || 'No especificado'}
-                          </td>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                            {new Date(tx.date).toLocaleString()}
-                          </td>
-                          <td style={{ color: 'var(--text-primary)' }}>
-                            {tx.category || 'Sin categoría'}
-                          </td>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                            {tx.description || '-'}
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-sm"
-                              style={{
-                                padding: '0.25rem 0.75rem',
-                                fontSize: '0.75rem',
-                                fontWeight: '500',
-                                border: '1px solid var(--danger)',
-                                backgroundColor: 'transparent',
-                                color: 'var(--danger)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                transition: 'all var(--transition-fast)'
-                              }}
-                              onClick={() => handleDelete(tx.id)}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = 'var(--danger-light)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = 'transparent';
-                              }}
-                            >
-                              <i className="bi bi-trash me-1"></i>
-                              Eliminar
-                            </button>
-                          </td>
+                <>
+                  <div className="table-responsive">
+                    <table className="table-custom mb-0">
+                      <thead>
+                        <tr>
+                          <th>Monto</th>
+                          <th>Moneda</th>
+                          <th>Fecha</th>
+                          <th>Categoría</th>
+                          <th>Fuente</th>
+                          <th></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {paginatedIncomeTransactions.map(tx => (
+                          <tr key={tx.id}>
+                            <td style={{ fontWeight: '600', color: 'var(--success)' }}>
+                              {tx.currency_symbol || currencyData.symbol}{Number(tx.amount).toFixed(2)}
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              {CURRENCIES.find(c => c.code === (tx.currency_code || currencyData.currency || 'ARS'))?.label || 'No especificado'}
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              {new Date(tx.date).toLocaleString()}
+                            </td>
+                            <td style={{ color: 'var(--text-primary)' }}>
+                              {tx.category || 'Sin categoría'}
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                              {tx.source || tx.description || '-'}
+                            </td>
+                            <td>
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  padding: '0.25rem 0.75rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '500',
+                                  border: '1px solid var(--danger)',
+                                  backgroundColor: 'transparent',
+                                  color: 'var(--danger)',
+                                  borderRadius: 'var(--radius-md)',
+                                  cursor: 'pointer',
+                                  transition: 'all var(--transition-fast)'
+                                }}
+                                onClick={() => handleDelete(tx.id)}
+                                onMouseEnter={(e) => {
+                                  e.target.style.backgroundColor = 'var(--danger-light)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = 'transparent';
+                                }}
+                              >
+                                <i className="bi bi-trash me-1"></i>
+                                Eliminar
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                    <small style={{ color: 'var(--text-secondary)' }}>
+                      Mostrando {paginatedIncomeTransactions.length} de {incomeTransactions.length} ingresos
+                    </small>
+                    <div className="d-flex align-items-center gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        disabled={incomePage === 1}
+                        onClick={() => setIncomePage(prev => Math.max(1, prev - 1))}
+                      >
+                        <i className="bi bi-chevron-left me-1"></i>
+                        Anterior
+                      </button>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                        Página {incomePage} de {totalIncomePages}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        disabled={incomePage === totalIncomePages}
+                        onClick={() => setIncomePage(prev => Math.min(totalIncomePages, prev + 1))}
+                      >
+                        Siguiente
+                        <i className="bi bi-chevron-right ms-1"></i>
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
-            </div>
-          </div>
+            </>
+          )}
         </div>
     </>
   );
 }
+
